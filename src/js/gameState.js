@@ -58,7 +58,7 @@ export class GameState {
       flags: this.flags
     };
     
-    localStorage.setItem('questOfMemorySave', JSON.stringify(saveData));
+    localStorage.setItem('forgottenSteel_saveGame', JSON.stringify(saveData));
     return true;
   }
   

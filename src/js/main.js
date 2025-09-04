@@ -30,7 +30,7 @@ class Game {
       visitedLocations: [],
       defeatedEnemies: [],
       discoveredItems: []
-    };
+    }
     this.terminalHistory = [];
     
     // WebGL renderer
@@ -59,6 +59,18 @@ class Game {
     this.init();
   }
   
+  // Check if localStorage is available and working
+  isLocalStorageAvailable() {
+    try {
+      const test = '__localStorage_test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  
   init() {
     // Initialize DOM elements
     this.titleScreen = document.getElementById('title-screen');
@@ -68,6 +80,11 @@ class Game {
     this.loadGameBtn = document.getElementById('load-game-btn');
     this.startAdventureBtn = document.getElementById('start-game-btn');
     this.characterNameInput = document.getElementById('player-name');
+    
+    // Game over screen elements
+    this.loadGameBtnGameOver = document.getElementById('load-game-btn-gameover');
+    this.newGameBtnGameOver = document.getElementById('new-game-btn-gameover');
+    this.titleBtnGameOver = document.getElementById('title-btn-gameover');
     
     // Set up event listeners
     this.setupEventListeners();
@@ -85,6 +102,17 @@ class Game {
     }
     if (this.startAdventureBtn) {
       this.startAdventureBtn.addEventListener('click', () => this.startNewGame());
+    }
+    
+    // Game over screen event listeners
+    if (this.loadGameBtnGameOver) {
+      this.loadGameBtnGameOver.addEventListener('click', () => this.loadGame());
+    }
+    if (this.newGameBtnGameOver) {
+      this.newGameBtnGameOver.addEventListener('click', () => this.showCharacterCreation());
+    }
+    if (this.titleBtnGameOver) {
+      this.titleBtnGameOver.addEventListener('click', () => this.showScreen('title-screen'));
     }
   }
   
@@ -105,10 +133,16 @@ class Game {
   }
   
   loadGame() {
+    // Check if localStorage is available
+    if (!this.isLocalStorageAvailable()) {
+      alert('Save/Load functionality is not available in this browser or is disabled.');
+      return;
+    }
+    
     const savedGame = localStorage.getItem('forgottenSteel_saveGame');
     
     if (!savedGame) {
-      alert('No saved game found!');
+      alert('No saved game found! Start a new game to begin your adventure.');
       return;
     }
     
@@ -148,14 +182,38 @@ class Game {
       // Restore the game world
       this.restoreGame();
       
-      alert(`Game loaded! Welcome back, ${this.playerName}!`);
+      // Show success message with better formatting
+      const welcomeMsg = `Game loaded successfully! Welcome back, ${this.playerName}!`;
+      if (this.terminal) {
+        this.terminal.print(welcomeMsg, 'system-message');
+      } else {
+        alert(welcomeMsg);
+      }
     } catch (error) {
-      alert('Error loading saved game. The save file may be corrupted.');
+      const errorMsg = 'Error loading saved game. The save file may be corrupted or incompatible. Please start a new game.';
+      alert(errorMsg);
       console.error('Load game error:', error);
+      
+      // Optionally clear the corrupted save
+      try {
+        localStorage.removeItem('forgottenSteel_saveGame');
+      } catch (e) {
+        console.error('Failed to clear corrupted save:', e);
+      }
     }
   }
   
   saveGame() {
+    // Check if localStorage is available
+    if (!this.isLocalStorageAvailable()) {
+      if (this.terminal) {
+        this.terminal.print('Save functionality is not available in this browser.', 'error-message');
+      } else {
+        alert('Save functionality is not available in this browser.');
+      }
+      return false;
+    }
+    
     try {
       const saveData = {
         playerName: this.gameState.playerName,
@@ -177,23 +235,27 @@ class Game {
       
       localStorage.setItem('forgottenSteel_saveGame', JSON.stringify(saveData));
       
+      const saveMsg = `Game saved successfully! (${new Date().toLocaleString()})`;
       if (this.terminal) {
-        this.terminal.print('Game saved successfully.', 'system-message');
+        this.terminal.print(saveMsg, 'system-message');
       } else {
         const terminalOutput = document.getElementById('terminal-output');
         if (terminalOutput) {
-          terminalOutput.innerHTML += `<p>Game saved successfully!</p>`;
+          terminalOutput.innerHTML += `<p class="system-message">${saveMsg}</p>`;
           terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        } else {
+          alert('Game saved successfully!');
         }
       }
       
       return true;
     } catch (error) {
       console.error('Failed to save game:', error);
+      const errorMsg = 'Failed to save game. This may be due to insufficient storage space or browser restrictions. Please try again.';
       if (this.terminal) {
-        this.terminal.print('Failed to save game.', 'error-message');
+        this.terminal.print(errorMsg, 'error-message');
       } else {
-        alert('Error saving game. Please try again.');
+        alert(errorMsg);
       }
       return false;
     }
