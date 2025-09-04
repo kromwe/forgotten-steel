@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A WebGL text adventure game",
   "main": "electron-main.js",
-  "homepage": "https://yourusername.github.io/forgotten-steel",
+  "homepage": "https://kromwe.github.io/forgotten-steel",
   "scripts": {
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production",
