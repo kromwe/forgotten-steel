@@ -170,6 +170,72 @@ export class CombatSystem {
     this.combatHandlers = null;
   }
 
+  promptBranchChoice() {
+    this.terminal.print(`\nYou're about to fight with your bare hands!`, 'combat-warning');
+    this.terminal.print(`You notice a branch nearby that could serve as a weapon.`, 'combat-suggestion');
+    this.terminal.print(`\nWhat would you like to do?`, 'combat-prompt');
+    this.terminal.print(`1. Take the branch and equip it`, 'combat-option');
+    this.terminal.print(`2. Fight with bare hands`, 'combat-option');
+    this.terminal.print(`\nType '1' or '2' to choose:`, 'combat-prompt');
+    
+    this.setupBranchChoiceHandlers();
+  }
+  
+  setupBranchChoiceHandlers() {
+    // Store original handlers
+    this.originalHandlers = { ...this.terminal.commandHandlers };
+    
+    // Clear existing handlers
+    this.terminal.commandHandlers = {};
+    
+    // Handler for choice 1 - take branch
+    this.terminal.registerCommand('^1$', () => {
+      this.restoreCommandHandlers();
+      this.takeBranchAndEquip();
+    });
+    
+    // Handler for choice 2 - fight bare handed
+    this.terminal.registerCommand('^2$', () => {
+      this.restoreCommandHandlers();
+      this.terminal.print(`You decide to fight with your bare hands. Brave, but dangerous!`, 'combat-choice');
+      this.continueCombatInit();
+    });
+    
+    // Handler for invalid input
+    this.terminal.registerCommand('.*', () => {
+      this.terminal.print(`Please type '1' to take the branch or '2' to fight bare handed.`, 'error-message');
+    });
+  }
+  
+  takeBranchAndEquip() {
+    const currentLocation = this.storyEngine.locations[this.gameState.currentLocation];
+    const branchItem = this.storyEngine.items['branch'];
+    
+    // Remove branch from location
+    const branchIndex = currentLocation.items.indexOf('branch');
+    if (branchIndex > -1) {
+      currentLocation.items.splice(branchIndex, 1);
+    }
+    
+    // Add to inventory
+    this.gameState.addToInventory({
+      id: 'branch',
+      ...branchItem
+    });
+    
+    // Equip the branch
+    this.gameState.equipWeapon({
+      id: 'branch',
+      ...branchItem
+    });
+    
+    this.terminal.print(`You quickly grab the ${branchItem.name.toLowerCase()} and ready it as a weapon!`, 'action-result');
+    this.terminal.print(`${branchItem.name} equipped!`, 'equip-success');
+    
+    // Continue with combat
+    this.continueCombatInit();
+  }
+
   getAvailableWeapons() {
     return this.gameState.inventory.filter(item => item.type === "weapon");
   }
@@ -296,8 +362,8 @@ export class CombatSystem {
         if (currentLocation && currentLocation.items && currentLocation.items.includes('branch')) {
           const branchItem = this.storyEngine.items['branch'];
           if (branchItem && (!branchItem.hidden || this.gameState.flags[branchItem.revealFlag])) {
-            this.terminal.print(`\nYou're about to fight with your bare hands! You notice a ${branchItem.name.toLowerCase()} nearby that could serve as a weapon.`, 'combat-suggestion');
-            this.terminal.print(`Try 'take branch' and then 'equip branch' to improve your combat effectiveness!`, 'combat-suggestion');
+            this.promptBranchChoice();
+            return; // Wait for player response before continuing
           }
         }
       }
