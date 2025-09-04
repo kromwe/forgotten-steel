@@ -417,6 +417,18 @@ export class CombatSystem {
     this.originalHandlers = null;
   }  
   playerAttack() {
+    // Check if player has no weapon and suggest branch if available
+    if (!this.gameState.equippedWeapon) {
+      const currentLocation = this.storyEngine.locations[this.gameState.currentLocation];
+      if (currentLocation && currentLocation.items && currentLocation.items.includes('branch')) {
+        const branchItem = this.storyEngine.items['branch'];
+        if (branchItem && (!branchItem.hidden || this.gameState.flags[branchItem.revealFlag])) {
+          this.terminal.print(`You're fighting with your bare hands! You notice a ${branchItem.name.toLowerCase()} nearby that could serve as a weapon.`, 'combat-suggestion');
+          this.terminal.print(`Try 'take branch' and then 'equip branch' to improve your combat effectiveness!`, 'combat-suggestion');
+        }
+      }
+    }
+    
     // Calculate player damage
     let baseDamage = 5; // Base unarmed damage
     let damageMultiplier = 1.0;
@@ -635,6 +647,9 @@ export class CombatSystem {
       }
     }
     
+    // Create corpse that remains in the location
+    this.createCorpse();
+    
     // Handle post-combat events
     if (this.currentEnemy.onDefeat) {
       this.currentEnemy.onDefeat(this.gameState, this.terminal, this.storyEngine);
@@ -642,7 +657,72 @@ export class CombatSystem {
     
     // End combat
     this.endCombat();
-  }  
+  }
+  
+  createCorpse() {
+    const currentLocation = this.storyEngine.locations[this.gameState.currentLocation];
+    if (!currentLocation) return;
+    
+    // Create corpse ID based on enemy name
+    const corpseId = `${this.currentEnemy.name.toLowerCase().replace(/\s+/g, '_')}_corpse`;
+    
+    // Determine loot based on enemy type
+    let lootItems = [];
+    const enemyName = this.currentEnemy.name.toLowerCase();
+    
+    if (enemyName.includes('wolf')) {
+      lootItems = [
+        { id: 'wolf_pelt' },
+        { id: 'twisted_claw' }
+      ];
+    } else if (enemyName.includes('bear')) {
+      lootItems = [
+        { id: 'bear_hide' },
+        { id: 'bear_claws' }
+      ];
+    }
+    
+    // Create corpse NPC
+    const corpse = {
+      name: `${this.currentEnemy.name} Corpse`,
+      description: `The lifeless body of the ${this.currentEnemy.name.toLowerCase()}. You might be able to find something useful on it.`,
+      presenceDescription: `The corpse of the ${this.currentEnemy.name.toLowerCase()} lies here.`,
+      keywords: ["corpse", "body", "remains", ...this.currentEnemy.keywords],
+      talkable: false,
+      attackable: false,
+      hidden: false,
+      isCorpse: true,
+      searched: false,
+      originalEnemy: this.currentEnemy.name,
+      loot: lootItems,
+      onExamine: (gameState, terminal, storyEngine) => {
+        terminal.print(`The ${this.currentEnemy.name.toLowerCase()} lies motionless. Its body shows the wounds from your battle.`, 'examine-result');
+        
+        // Check if there are loot items to find
+        if (corpse.loot && corpse.loot.length > 0) {
+          terminal.print("You might find something useful if you search the corpse.", 'examine-result');
+        } else {
+          terminal.print("The corpse appears to have nothing of value.", 'examine-result');
+        }
+      }
+    };
+    
+    // Add corpse to the story engine's NPCs
+    this.storyEngine.npcs[corpseId] = corpse;
+    
+    // Add corpse to current location's NPCs
+    if (!currentLocation.npcs) {
+      currentLocation.npcs = [];
+    }
+    currentLocation.npcs.push(corpseId);
+    
+    // Remove the original enemy from the location
+    const enemyIndex = currentLocation.npcs.indexOf(this.currentEnemy.id || this.currentEnemy.name.toLowerCase().replace(/\s+/g, '_'));
+    if (enemyIndex !== -1) {
+      currentLocation.npcs.splice(enemyIndex, 1);
+    }
+  }
+  
   playerDefeated() {
     this.terminal.print("\nYou have been defeated!", 'combat-defeat');
     

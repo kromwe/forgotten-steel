@@ -659,6 +659,38 @@ export const gameData = {
           return false; // Crystal is not consumed
         }
       }
+    },
+    
+    wolf_pelt: {
+      name: "Wolf Pelt",
+      description: "A rough pelt from a twisted wolf. The fur is patchy and has an unnatural texture, but it might be useful for crafting.",
+      keywords: ["pelt", "fur", "hide", "wolf"],
+      type: "material",
+      takeable: true
+    },
+    
+    twisted_claw: {
+      name: "Twisted Claw",
+      description: "A sharp claw from a corrupted creature. It's unnaturally hard and seems to shimmer with dark energy.",
+      keywords: ["claw", "talon", "twisted"],
+      type: "material",
+      takeable: true
+    },
+    
+    bear_hide: {
+      name: "Bear Hide",
+      description: "A thick hide from a massive bear. Despite the creature's corruption, the hide is still valuable and could be used for armor.",
+      keywords: ["hide", "skin", "bear"],
+      type: "material",
+      takeable: true
+    },
+    
+    bear_claws: {
+      name: "Bear Claws",
+      description: "Massive claws from a twisted bear. They're razor-sharp and could potentially be crafted into weapons.",
+      keywords: ["claws", "talons", "bear"],
+      type: "material",
+      takeable: true
     }
   },
   

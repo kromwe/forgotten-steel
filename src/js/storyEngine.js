@@ -98,6 +98,12 @@ export class StoryEngine {
         this.terminal.print("Failed to save game.", 'error-message');
       }
     });
+    
+    // Search command for corpses
+    this.terminal.registerCommand('^(search|loot) (.+)$', (input) => {
+      const targetName = input.match(/^(?:search|loot)\s+(.+)$/i)[1].toLowerCase();
+      this.searchTarget(targetName);
+    });
   }
   
   registerLocation(id, data) {
@@ -590,6 +596,63 @@ export class StoryEngine {
     this.terminal.print(`You don't see anyone called ${targetName} here.`, 'error-message');
   }
   
+  searchTarget(targetName) {
+    const locationId = this.gameState.currentLocation;
+    const location = this.locations[locationId];
+    
+    if (!location || !location.npcs) {
+      this.terminal.print(`There's nothing here to search.`, 'error-message');
+      return;
+    }
+    
+    // Find the NPC (corpse) in the current location
+    for (const npcId of location.npcs) {
+      const npc = this.npcs[npcId];
+      
+      if (npc && (!npc.hidden || this.gameState.flags[npc.revealFlag])) {
+        if (npc.keywords.some(keyword => targetName.includes(keyword))) {
+          // Check if it's a corpse that can be searched
+          if (npc.isCorpse) {
+            // Check if already searched
+            if (npc.searched) {
+              this.terminal.print(`You have already searched the ${npc.name}.`, 'action-result');
+              return;
+            }
+            
+            // Mark as searched
+            npc.searched = true;
+            
+            // Check for loot
+            if (npc.loot && npc.loot.length > 0) {
+              this.terminal.print(`You search the ${npc.name} and find:`, 'action-result');
+              
+              for (const lootItem of npc.loot) {
+                const item = this.items[lootItem.id];
+                if (item) {
+                  // Add to inventory
+                  this.gameState.addToInventory({
+                    id: lootItem.id,
+                    ...item
+                  });
+                  this.terminal.print(`- ${item.name}`, 'item-found');
+                }
+              }
+            } else {
+              this.terminal.print(`You search the ${npc.name} but find nothing of value.`, 'action-result');
+            }
+            
+            return;
+          } else {
+            this.terminal.print(`You can't search ${npc.name}.`, 'error-message');
+            return;
+          }
+        }
+      }
+    }
+    
+    this.terminal.print(`You don't see any ${targetName} here to search.`, 'error-message');
+  }
+  
   showHelp() {
     this.terminal.print("Available commands:", 'help-header');
     this.terminal.print("- look / examine [object]: Look around or examine something specific", 'help-item');
@@ -601,6 +664,7 @@ export class StoryEngine {
     this.terminal.print("- inventory/inv: Check what you're carrying", 'help-item');
     this.terminal.print("- talk to [person]: Talk to someone", 'help-item');
     this.terminal.print("- attack [target]: Attack a creature or person", 'help-item');
+    this.terminal.print("- search/loot [target]: Search a corpse for items", 'help-item');
     this.terminal.print("- status: Check your health and condition", 'help-item');
     this.terminal.print("- save: Save your game progress", 'help-item');
   }
