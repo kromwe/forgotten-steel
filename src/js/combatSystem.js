@@ -290,6 +290,16 @@ export class CombatSystem {
       if (availableWeapons.length > 0) {
         this.promptWeaponEquip(availableWeapons);
         return; // Wait for player response before continuing
+      } else {
+        // No weapons in inventory, check for branch in current location
+        const currentLocation = this.storyEngine.locations[this.gameState.currentLocation];
+        if (currentLocation && currentLocation.items && currentLocation.items.includes('branch')) {
+          const branchItem = this.storyEngine.items['branch'];
+          if (branchItem && (!branchItem.hidden || this.gameState.flags[branchItem.revealFlag])) {
+            this.terminal.print(`\nYou're about to fight with your bare hands! You notice a ${branchItem.name.toLowerCase()} nearby that could serve as a weapon.`, 'combat-suggestion');
+            this.terminal.print(`Try 'take branch' and then 'equip branch' to improve your combat effectiveness!`, 'combat-suggestion');
+          }
+        }
       }
     }
     
