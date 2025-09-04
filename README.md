@@ -2,6 +2,50 @@
 
 A WebGL text adventure game where you play as a knight with amnesia on a quest to recover your memories and save the queen from an evil wizard.
 
+## 🚀 GitHub Pages Deployment
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions.
+
+### Setup Instructions:
+
+1. **Create GitHub Repository:**
+   ```bash
+   # Create a new repository on GitHub named 'forgotten-steel'
+   # Then connect your local repository:
+   git remote add origin https://github.com/yourusername/forgotten-steel.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+2. **Enable GitHub Pages:**
+   - Go to your repository settings on GitHub
+   - Navigate to "Pages" in the left sidebar
+   - Under "Source", select "GitHub Actions"
+   - The workflow will automatically deploy on every push to main branch
+
+3. **Update Homepage URL:**
+   - Replace `yourusername` in `package.json` homepage field with your actual GitHub username
+   - Commit and push the change
+
+4. **Access Your Game:**
+   - After deployment, your game will be available at: `https://yourusername.github.io/forgotten-steel`
+
+### Local Development:
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
+
+# Build Electron app
+npm run dist
+```
+
 ## Features
 
 - **WebGL Graphics**: Visual representation of game locations in the top half of the screen
