@@ -1,0 +1,50 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="400" fill="#1a1a2e"/>
+  
+  <!-- Stars -->
+  <g>
+    <circle cx="100" cy="50" r="1" fill="white"/>
+    <circle cx="200" cy="80" r="1.5" fill="white"/>
+    <circle cx="300" cy="30" r="1" fill="white"/>
+    <circle cx="400" cy="70" r="2" fill="white"/>
+    <circle cx="500" cy="40" r="1" fill="white"/>
+    <circle cx="600" cy="90" r="1.5" fill="white"/>
+    <circle cx="700" cy="60" r="1" fill="white"/>
+    <circle cx="150" cy="120" r="1" fill="white"/>
+    <circle cx="250" cy="150" r="1.5" fill="white"/>
+    <circle cx="350" cy="100" r="1" fill="white"/>
+    <circle cx="450" cy="140" r="2" fill="white"/>
+    <circle cx="550" cy="110" r="1" fill="white"/>
+    <circle cx="650" cy="160" r="1.5" fill="white"/>
+    <circle cx="750" cy="130" r="1" fill="white"/>
+  </g>
+  
+  <!-- Ground -->
+  <rect width="800" height="150" y="250" fill="#2a3b4c"/>
+  
+  <!-- Mountains -->
+  <polygon points="0,250 100,150 200,220 300,100 400,180 500,120 600,200 700,150 800,250" fill="#3f5168"/>
+  
+  <!-- Trees -->
+  <g>
+    <!-- Tree 1 -->
+    <rect x="150" y="230" width="10" height="30" fill="#6b4226"/>
+    <polygon points="130,230 180,230 155,180" fill="#2d4f1e"/>
+    <polygon points="135,210 175,210 155,170" fill="#2d4f1e"/>
+    <polygon points="140,190 170,190 155,160" fill="#2d4f1e"/>
+    
+    <!-- Tree 2 -->
+    <rect x="650" y="220" width="10" height="40" fill="#6b4226"/>
+    <polygon points="630,220 680,220 655,170" fill="#2d4f1e"/>
+    <polygon points="635,200 675,200 655,160" fill="#2d4f1e"/>
+    <polygon points="640,180 670,180 655,150" fill="#2d4f1e"/>
+  </g>
+  
+  <!-- Path -->
+  <path d="M350,400 C400,350 450,350 500,400" fill="#8b7355" stroke="#8b7355" stroke-width="20"/>
+  
+  <!-- Text -->
+  <text x="400" y="50" font-family="monospace" font-size="24" text-anchor="middle" fill="#f5a623">Quest of Memory</text>
+  <text x="400" y="80" font-family="monospace" font-size="16" text-anchor="middle" fill="#ccc">A WebGL Text Adventure</text>
+</svg>

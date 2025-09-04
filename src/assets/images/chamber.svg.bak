@@ -1,0 +1,44 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="roomGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#2a2a2a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="stoneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a4a4a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a2a2a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#roomGradient)"/>
+  
+  <!-- Stone walls -->
+  <rect x="0" y="0" width="800" height="50" fill="url(#stoneGradient)"/>
+  <rect x="0" y="550" width="800" height="50" fill="url(#stoneGradient)"/>
+  <rect x="0" y="0" width="50" height="600" fill="url(#stoneGradient)"/>
+  <rect x="750" y="0" width="50" height="600" fill="url(#stoneGradient)"/>
+  
+  <!-- Ancient bed/altar in center -->
+  <rect x="300" y="250" width="200" height="100" fill="#3a3a3a" stroke="#5a5a5a" stroke-width="2"/>
+  <rect x="310" y="240" width="180" height="20" fill="#4a4a4a"/>
+  
+  <!-- Mysterious glowing runes on walls -->
+  <circle cx="150" cy="200" r="8" fill="#00aaff" opacity="0.7">
+    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="650" cy="300" r="8" fill="#00aaff" opacity="0.7">
+    <animate attributeName="opacity" values="0.9;0.3;0.9" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Doorways -->
+  <rect x="375" y="0" width="50" height="50" fill="#1a1a1a"/> <!-- North exit -->
+  <rect x="750" y="275" width="50" height="50" fill="#1a1a1a"/> <!-- East exit -->
+  
+  <!-- Scattered debris -->
+  <polygon points="100,450 120,440 110,460" fill="#3a3a3a"/>
+  <polygon points="600,480 620,470 610,490" fill="#3a3a3a"/>
+  
+  <!-- Title text -->
+  <text x="400" y="580" text-anchor="middle" fill="#888" font-family="serif" font-size="16">Ancient Chamber</text>
+</svg>

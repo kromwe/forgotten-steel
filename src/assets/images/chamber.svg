@@ -1,0 +1,145 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Detailed crosshatching patterns for shading -->
+    <pattern id="crosshatch" patternUnits="userSpaceOnUse" width="4" height="4">
+      <path d="M0,0 L4,4 M0,4 L4,0" stroke="#333" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+    
+    <pattern id="stoneTex" patternUnits="userSpaceOnUse" width="8" height="8">
+      <rect width="8" height="8" fill="#f0f0f0"/>
+      <path d="M0,2 L8,2 M0,6 L8,6 M2,0 L2,8 M6,0 L6,8" stroke="#ccc" stroke-width="0.3"/>
+    </pattern>
+    
+    <!-- Dramatic lighting gradients -->
+    <radialGradient id="torchGlow" cx="30%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#e8e8e8"/>
+      <stop offset="80%" stop-color="#888888"/>
+      <stop offset="100%" stop-color="#222222"/>
+    </radialGradient>
+    
+    <linearGradient id="wallShading" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5f5f5"/>
+      <stop offset="50%" stop-color="#999999"/>
+      <stop offset="100%" stop-color="#333333"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with dramatic lighting -->
+  <rect width="800" height="600" fill="url(#torchGlow)"/>
+  
+  <!-- Ancient stone chamber walls with intricate detail -->
+  <g fill="url(#wallShading)" stroke="#222" stroke-width="2">
+    <!-- Left wall with detailed stonework -->
+    <path d="M0,0 L200,0 L180,600 L0,600 Z" fill="url(#stoneTex)"/>
+    <path d="M20,50 L180,50 L175,100 L25,100 Z" fill="#ddd" stroke="#666"/>
+    <path d="M30,120 L170,120 L165,170 L35,170 Z" fill="#ccc" stroke="#555"/>
+    
+    <!-- Right wall with matching stonework -->
+    <path d="M600,0 L800,0 L800,600 L620,600 Z" fill="url(#stoneTex)"/>
+    <path d="M620,50 L780,50 L775,100 L625,100 Z" fill="#ddd" stroke="#666"/>
+    <path d="M630,120 L770,120 L765,170 L635,170 Z" fill="#ccc" stroke="#555"/>
+  </g>
+  
+  <!-- Massive stone pillars with carved details -->
+  <g fill="#e0e0e0" stroke="#444" stroke-width="3">
+    <!-- Left pillar -->
+    <ellipse cx="150" cy="300" rx="40" ry="250" fill="url(#wallShading)"/>
+    <ellipse cx="150" cy="300" rx="35" ry="240" fill="#f0f0f0"/>
+    
+    <!-- Carved spiral details on left pillar -->
+    <path d="M130,150 Q150,140 170,150 Q160,170 150,180 Q140,170 130,150" fill="none" stroke="#666" stroke-width="2"/>
+    <path d="M130,200 Q150,190 170,200 Q160,220 150,230 Q140,220 130,200" fill="none" stroke="#666" stroke-width="2"/>
+    <path d="M130,250 Q150,240 170,250 Q160,270 150,280 Q140,270 130,250" fill="none" stroke="#666" stroke-width="2"/>
+    
+    <!-- Right pillar -->
+    <ellipse cx="650" cy="300" rx="40" ry="250" fill="url(#wallShading)"/>
+    <ellipse cx="650" cy="300" rx="35" ry="240" fill="#f0f0f0"/>
+    
+    <!-- Carved spiral details on right pillar -->
+    <path d="M630,150 Q650,140 670,150 Q660,170 650,180 Q640,170 630,150" fill="none" stroke="#666" stroke-width="2"/>
+    <path d="M630,200 Q650,190 670,200 Q660,220 650,230 Q640,220 630,200" fill="none" stroke="#666" stroke-width="2"/>
+    <path d="M630,250 Q650,240 670,250 Q660,270 650,280 Q640,270 630,250" fill="none" stroke="#666" stroke-width="2"/>
+  </g>
+  
+  <!-- Ornate carved capitals on pillars -->
+  <g fill="#d0d0d0" stroke="#555" stroke-width="2">
+    <!-- Left capital -->
+    <path d="M110,80 L190,80 L185,120 L115,120 Z" fill="#e8e8e8"/>
+    <path d="M120,85 L180,85 L175,95 L125,95 Z" fill="#f5f5f5"/>
+    <path d="M125,100 L175,100 L170,115 L130,115 Z" fill="#ddd"/>
+    
+    <!-- Right capital -->
+    <path d="M610,80 L690,80 L685,120 L615,120 Z" fill="#e8e8e8"/>
+    <path d="M620,85 L680,85 L675,95 L625,95 Z" fill="#f5f5f5"/>
+    <path d="M625,100 L675,100 L670,115 L630,115 Z" fill="#ddd"/>
+  </g>
+  
+  <!-- Ancient archway with intricate carvings -->
+  <g fill="#c0c0c0" stroke="#333" stroke-width="3">
+    <path d="M250,0 Q400,0 550,0 Q500,50 450,80 L350,80 Q300,50 250,0" fill="url(#wallShading)"/>
+    <path d="M270,20 Q400,15 530,20 Q490,45 440,65 L360,65 Q310,45 270,20" fill="#e8e8e8"/>
+    
+    <!-- Carved decorative elements -->
+    <circle cx="320" cy="40" r="8" fill="#f0f0f0" stroke="#666"/>
+    <circle cx="400" cy="35" r="10" fill="#f0f0f0" stroke="#666"/>
+    <circle cx="480" cy="40" r="8" fill="#f0f0f0" stroke="#666"/>
+  </g>
+  
+  <!-- Ornate braziers with flame details -->
+  <g>
+    <!-- Left brazier base -->
+    <ellipse cx="150" cy="200" rx="25" ry="15" fill="#888" stroke="#444" stroke-width="2"/>
+    <ellipse cx="150" cy="195" rx="20" ry="12" fill="#aaa"/>
+    
+    <!-- Left flame with crosshatching -->
+    <path d="M135,195 Q150,170 165,195 Q155,180 150,185 Q145,180 135,195" fill="url(#crosshatch)" stroke="#666"/>
+    <path d="M140,190 Q150,175 160,190 Q155,182 150,185 Q145,182 140,190" fill="#f8f8f8" opacity="0.8"/>
+    
+    <!-- Right brazier base -->
+    <ellipse cx="650" cy="200" rx="25" ry="15" fill="#888" stroke="#444" stroke-width="2"/>
+    <ellipse cx="650" cy="195" rx="20" ry="12" fill="#aaa"/>
+    
+    <!-- Right flame with crosshatching -->
+    <path d="M635,195 Q650,170 665,195 Q655,180 650,185 Q645,180 635,195" fill="url(#crosshatch)" stroke="#666"/>
+    <path d="M640,190 Q650,175 660,190 Q655,182 650,185 Q645,182 640,190" fill="#f8f8f8" opacity="0.8"/>
+  </g>
+  
+  <!-- Detailed floor with perspective and texture -->
+  <g fill="url(#stoneTex)" stroke="#666" stroke-width="1">
+    <!-- Floor tiles with perspective -->
+    <path d="M200,500 L600,500 L650,600 L150,600 Z" fill="#e8e8e8"/>
+    
+    <!-- Floor tile lines -->
+    <path d="M250,520 L550,520 L580,580 L220,580" fill="none" stroke="#ccc"/>
+    <path d="M300,540 L500,540 L520,560 L280,560" fill="none" stroke="#ccc"/>
+    <path d="M350,550 L450,550 L460,570 L340,570" fill="none" stroke="#ccc"/>
+  </g>
+  
+  <!-- Mysterious shadows and depth -->
+  <g fill="#333" opacity="0.6">
+    <!-- Pillar shadows -->
+    <ellipse cx="160" cy="320" rx="15" ry="180" transform="skewX(-10)"/>
+    <ellipse cx="640" cy="320" rx="15" ry="180" transform="skewX(10)"/>
+    
+    <!-- Archway shadow -->
+    <path d="M250,80 L550,80 L500,150 L300,150 Z" opacity="0.3"/>
+  </g>
+  
+  <!-- Atmospheric details and texture overlays -->
+  <g fill="url(#crosshatch)" opacity="0.2">
+    <rect x="0" y="400" width="800" height="200"/>
+  </g>
+  
+  <!-- Final highlight details -->
+  <g fill="none" stroke="#fff" stroke-width="1" opacity="0.7">
+    <!-- Pillar highlights -->
+    <ellipse cx="140" cy="280" rx="3" ry="200"/>
+    <ellipse cx="660" cy="280" rx="3" ry="200"/>
+    
+    <!-- Architectural edge highlights -->
+    <path d="M250,0 Q400,0 550,0"/>
+    <path d="M200,0 L180,600"/>
+    <path d="M600,0 L620,600"/>
+  </g>
+</svg>

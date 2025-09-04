@@ -1,0 +1,472 @@
+// WebGL rendering system for the game
+
+class WebGLRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.gl = null;
+    this.program = null;
+    this.textures = {};
+    this.currentScene = null;
+    
+    this.init();
+  }
+  
+  init() {
+    // Initialize WebGL context
+    try {
+      this.gl = this.canvas.getContext('webgl2') || this.canvas.getContext('webgl');
+      if (!this.gl) {
+        throw new Error('WebGL not supported');
+      }
+      
+      // Set canvas size to match container
+      this.resizeCanvas();
+      window.addEventListener('resize', () => this.resizeCanvas());
+      
+      // Initialize shaders and program
+      this.initShaders();
+      
+      // Set up buffers
+      this.initBuffers();
+      
+      // Enable depth testing
+      this.gl.enable(this.gl.DEPTH_TEST);
+      this.gl.depthFunc(this.gl.LEQUAL);
+      
+      // Clear color
+      this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      
+      console.log('WebGL initialized successfully');
+    } catch (error) {
+      console.error('WebGL initialization failed:', error);
+      
+      // Display fallback message on canvas
+      const ctx = this.canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#333';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        ctx.font = '16px Courier New';
+        ctx.fillStyle = '#f00';
+        ctx.textAlign = 'center';
+        ctx.fillText('WebGL not supported or initialization failed.', this.canvas.width / 2, this.canvas.height / 2);
+      }
+    }
+  }
+  
+  resizeCanvas() {
+    const container = this.canvas.parentElement;
+    this.canvas.width = container.clientWidth;
+    this.canvas.height = container.clientHeight;
+    
+    if (this.gl) {
+      this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+    }
+  }
+  
+  initShaders() {
+    // Vertex shader source
+    const vsSource = `
+      attribute vec4 aVertexPosition;
+      attribute vec2 aTextureCoord;
+      
+      uniform mat4 uModelViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      
+      varying highp vec2 vTextureCoord;
+      
+      void main() {
+        gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+        vTextureCoord = aTextureCoord;
+      }
+    `;
+    
+    // Fragment shader source
+    const fsSource = `
+      varying highp vec2 vTextureCoord;
+      
+      uniform sampler2D uSampler;
+      
+      void main() {
+        gl_FragColor = texture2D(uSampler, vTextureCoord);
+      }
+    `;
+    
+    // Create shader program
+    const vertexShader = this.loadShader(this.gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = this.loadShader(this.gl.FRAGMENT_SHADER, fsSource);
+    
+    this.program = this.gl.createProgram();
+    this.gl.attachShader(this.program, vertexShader);
+    this.gl.attachShader(this.program, fragmentShader);
+    this.gl.linkProgram(this.program);
+    
+    if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+      throw new Error('Unable to initialize the shader program: ' + this.gl.getProgramInfoLog(this.program));
+    }
+    
+    // Store attribute and uniform locations
+    this.programInfo = {
+      program: this.program,
+      attribLocations: {
+        vertexPosition: this.gl.getAttribLocation(this.program, 'aVertexPosition'),
+        textureCoord: this.gl.getAttribLocation(this.program, 'aTextureCoord'),
+      },
+      uniformLocations: {
+        projectionMatrix: this.gl.getUniformLocation(this.program, 'uProjectionMatrix'),
+        modelViewMatrix: this.gl.getUniformLocation(this.program, 'uModelViewMatrix'),
+        uSampler: this.gl.getUniformLocation(this.program, 'uSampler'),
+      },
+    };
+  }
+  
+  loadShader(type, source) {
+    const shader = this.gl.createShader(type);
+    this.gl.shaderSource(shader, source);
+    this.gl.compileShader(shader);
+    
+    if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+      const info = this.gl.getShaderInfoLog(shader);
+      this.gl.deleteShader(shader);
+      throw new Error('An error occurred compiling the shaders: ' + info);
+    }
+    
+    return shader;
+  }
+  
+  initBuffers() {
+    // Create position buffer for a quad
+    const positions = [
+      -1.0, -1.0,  0.0,
+       1.0, -1.0,  0.0,
+       1.0,  1.0,  0.0,
+      -1.0,  1.0,  0.0,
+    ];
+    
+    this.positionBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(positions), this.gl.STATIC_DRAW);
+    
+    // Create texture coordinate buffer
+    const textureCoordinates = [
+      0.0, 1.0,
+      1.0, 1.0,
+      1.0, 0.0,
+      0.0, 0.0,
+    ];
+    
+    this.textureCoordBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordBuffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), this.gl.STATIC_DRAW);
+    
+    // Create index buffer
+    const indices = [
+      0, 1, 2,
+      0, 2, 3,
+    ];
+    
+    this.indexBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
+  }
+  
+  loadTexture(url) {
+    return new Promise((resolve, reject) => {
+      const texture = this.gl.createTexture();
+      this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+      
+      // Fill with a placeholder color until the image loads
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, 
+        this.gl.UNSIGNED_BYTE, new Uint8Array([128, 128, 128, 255])
+      );
+      
+      // Load the image
+      const image = new Image();
+      image.onload = () => {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        this.gl.texImage2D(
+          this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, 
+          this.gl.UNSIGNED_BYTE, image
+        );
+        
+        // Generate mipmaps if the image dimensions are powers of 2
+        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+          this.gl.generateMipmap(this.gl.TEXTURE_2D);
+        } else {
+          // Otherwise set texture parameters for non-power-of-2 textures
+          this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+          this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+          this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        }
+        
+        resolve(texture);
+      };
+      
+      image.onerror = () => {
+        reject(new Error(`Failed to load texture: ${url}`));
+      };
+      
+      image.src = url;
+    });
+    
+    function isPowerOf2(value) {
+      return (value & (value - 1)) === 0;
+    }
+  }
+  
+  async loadScene(sceneName) {
+    try {
+      // Load scene texture - try different formats
+      let texture;
+      const formats = ['svg', 'jpg', 'png'];
+      
+      for (const format of formats) {
+        try {
+          texture = await this.loadTexture(`assets/images/${sceneName}.${format}`);
+          break;
+        } catch (e) {
+          // Try next format
+        }
+      }
+      
+      if (!texture) {
+        // Fallback to placeholder
+        texture = await this.loadTexture('assets/images/placeholder.svg');
+      }
+      
+      this.textures[sceneName] = texture;
+      this.currentScene = sceneName;
+      return true;
+    } catch (error) {
+      console.error('Failed to load scene:', error);
+      return false;
+    }
+  }
+  
+  render(sceneName) {
+    if (!this.gl) return;
+    
+    // Try to load the scene if it's not already loaded
+    if (this.currentScene !== sceneName) {
+      if (!this.textures[sceneName]) {
+        this.loadScene(sceneName).then(() => this.render(sceneName));
+        return;
+      }
+      this.currentScene = sceneName;
+    }
+    
+    // Clear the canvas
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    
+    // If we don't have the texture yet, don't render
+    if (!this.textures[sceneName]) return;
+    
+    // Set up perspective matrix
+    const fieldOfView = 45 * Math.PI / 180;
+    const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+    const zNear = 0.1;
+    const zFar = 100.0;
+    const projectionMatrix = mat4.create();
+    
+    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+    
+    // Set up model view matrix
+    const modelViewMatrix = mat4.create();
+    mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -4.0]);
+    
+    // Bind position buffer
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+    this.gl.vertexAttribPointer(
+      this.programInfo.attribLocations.vertexPosition,
+      3,        // numComponents
+      this.gl.FLOAT, // type
+      false,    // normalize
+      0,        // stride
+      0         // offset
+    );
+    this.gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
+    
+    // Bind texture coordinate buffer
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordBuffer);
+    this.gl.vertexAttribPointer(
+      this.programInfo.attribLocations.textureCoord,
+      2,        // numComponents
+      this.gl.FLOAT, // type
+      false,    // normalize
+      0,        // stride
+      0         // offset
+    );
+    this.gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
+    
+    // Bind index buffer
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    
+    // Use shader program
+    this.gl.useProgram(this.programInfo.program);
+    
+    // Set uniforms
+    this.gl.uniformMatrix4fv(
+      this.programInfo.uniformLocations.projectionMatrix,
+      false,
+      projectionMatrix
+    );
+    this.gl.uniformMatrix4fv(
+      this.programInfo.uniformLocations.modelViewMatrix,
+      false,
+      modelViewMatrix
+    );
+    
+    // Bind texture
+    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.textures[sceneName]);
+    this.gl.uniform1i(this.programInfo.uniformLocations.uSampler, 0);
+    
+    // Draw
+    this.gl.drawElements(
+      this.gl.TRIANGLES,
+      6,  // vertex count
+      this.gl.UNSIGNED_SHORT, // type
+      0   // offset
+    );
+  }
+  
+  // Set the current scene for rendering
+  setScene(sceneData) {
+    if (!sceneData) {
+      console.warn('No scene data provided to setScene');
+      return;
+    }
+    
+    // Handle both string scene names and scene objects
+    if (typeof sceneData === 'string') {
+      // Scene data is just a scene name string
+      this.loadScene(sceneData);
+    } else {
+      // Scene data is an object with properties
+      this.currentSceneData = sceneData;
+      
+      // If scene has a background, load it as the current scene
+      if (sceneData.background) {
+        const sceneName = sceneData.id || sceneData.background.replace(/\.[^/.]+$/, ""); // Remove extension
+        this.loadScene(sceneName);
+      } else if (sceneData.id) {
+        this.loadScene(sceneData.id);
+      }
+    }
+  }
+  
+  // Memory flash effect methods
+  setMemoryFlashImage(imageUrl) {
+    // Store the flash image for later use
+    this.memoryFlashImage = imageUrl;
+  }
+  
+  updateMemoryFlash(progress, memoryData) {
+    // Update memory flash effect based on progress (0.0 to 1.0)
+    this.memoryFlashProgress = progress;
+    this.currentMemoryData = memoryData;
+    
+    // Apply flash effect to the current scene
+    if (this.gl && this.currentScene) {
+      // Create a flash overlay effect
+      const flashIntensity = Math.sin(progress * Math.PI) * 0.3; // Fade in and out
+      this.applyFlashOverlay(flashIntensity);
+    }
+  }
+  
+  clearMemoryFlash() {
+    // Clear memory flash effects
+    this.memoryFlashProgress = 0;
+    this.currentMemoryData = null;
+    this.memoryFlashImage = null;
+  }
+  
+  applyFlashOverlay(intensity) {
+    if (!this.gl || intensity <= 0) return;
+    
+    // Save current blend state
+    const blendEnabled = this.gl.isEnabled(this.gl.BLEND);
+    
+    // Enable blending for overlay effect
+    this.gl.enable(this.gl.BLEND);
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+    
+    // Create a white overlay with the specified intensity
+    this.gl.clearColor(1.0, 1.0, 1.0, intensity);
+    
+    // Restore previous blend state
+    if (!blendEnabled) {
+      this.gl.disable(this.gl.BLEND);
+    }
+  }
+}
+
+// Helper function to create a mat4 identity matrix
+const mat4 = {
+  create: function() {
+    return new Float32Array([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ]);
+  },
+  
+  perspective: function(out, fovy, aspect, near, far) {
+    const f = 1.0 / Math.tan(fovy / 2);
+    const nf = 1 / (near - far);
+    
+    out[0] = f / aspect;
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[4] = 0;
+    out[5] = f;
+    out[6] = 0;
+    out[7] = 0;
+    out[8] = 0;
+    out[9] = 0;
+    out[10] = (far + near) * nf;
+    out[11] = -1;
+    out[12] = 0;
+    out[13] = 0;
+    out[14] = (2 * far * near) * nf;
+    out[15] = 0;
+    
+    return out;
+  },
+  
+  translate: function(out, a, v) {
+    const x = v[0], y = v[1], z = v[2];
+    let a00, a01, a02, a03;
+    let a10, a11, a12, a13;
+    let a20, a21, a22, a23;
+    
+    if (a === out) {
+      out[12] = a[0] * x + a[4] * y + a[8] * z + a[12];
+      out[13] = a[1] * x + a[5] * y + a[9] * z + a[13];
+      out[14] = a[2] * x + a[6] * y + a[10] * z + a[14];
+      out[15] = a[3] * x + a[7] * y + a[11] * z + a[15];
+    } else {
+      a00 = a[0]; a01 = a[1]; a02 = a[2]; a03 = a[3];
+      a10 = a[4]; a11 = a[5]; a12 = a[6]; a13 = a[7];
+      a20 = a[8]; a21 = a[9]; a22 = a[10]; a23 = a[11];
+      
+      out[0] = a00; out[1] = a01; out[2] = a02; out[3] = a03;
+      out[4] = a10; out[5] = a11; out[6] = a12; out[7] = a13;
+      out[8] = a20; out[9] = a21; out[10] = a22; out[11] = a23;
+      
+      out[12] = a00 * x + a10 * y + a20 * z + a[12];
+      out[13] = a01 * x + a11 * y + a21 * z + a[13];
+      out[14] = a02 * x + a12 * y + a22 * z + a[14];
+      out[15] = a03 * x + a13 * y + a23 * z + a[15];
+    }
+    
+    return out;
+  }
+};
+
+// Export the WebGL initialization function
+export function initWebGL(canvas) {
+  return new WebGLRenderer(canvas);
+}

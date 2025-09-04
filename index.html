@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgotten Steel</title>
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Title Screen -->
+    <div id="title-screen" class="screen active">
+      <h1>Forgotten Steel</h1>
+      <div class="menu">
+        <button id="new-game-btn">New Game</button>
+        <button id="load-game-btn">Load Game</button>
+      </div>
+    </div>
+    
+    <!-- Character Creation Screen -->
+    <div id="character-creation" class="screen">
+      <h2>Who are you, brave adventurer?</h2>
+      <div class="input-container">
+        <label for="character-name">Your Name:</label>
+        <input type="text" id="character-name" placeholder="Enter your name">
+        <button id="start-adventure-btn">Begin Adventure</button>
+      </div>
+    </div>
+    
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="screen">
+      <!-- WebGL Scene Rendering Area -->
+      <div id="scene-container">
+        <canvas id="game-canvas"></canvas>
+      </div>
+      
+      <!-- Text Adventure Terminal -->
+      <div id="terminal-container">
+        <div id="terminal-output"></div>
+        <div id="terminal-input-container">
+          <span class="prompt">&gt;</span>
+          <input type="text" id="terminal-input" placeholder="What will you do?">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Scripts -->
+  <script src="src/js/main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="armoryGradient" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#3a2a2a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a1a;stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6a6a6a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3a3a3a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#armoryGradient)"/>
+  
+  <!-- Stone walls -->
+  <rect x="0" y="0" width="800" height="50" fill="#4a4a4a"/>
+  <rect x="0" y="550" width="800" height="50" fill="#4a4a4a"/>
+  <rect x="0" y="0" width="50" height="600" fill="#4a4a4a"/>
+  <rect x="750" y="0" width="50" height="600" fill="#4a4a4a"/>
+  
+  <!-- Weapon racks -->
+  <rect x="100" y="100" width="20" height="300" fill="#5a4a3a"/>
+  <rect x="680" y="100" width="20" height="300" fill="#5a4a3a"/>
+  
+  <!-- Swords on left rack -->
+  <rect x="90" y="120" width="40" height="8" fill="url(#metalGradient)"/>
+  <rect x="105" y="110" width="10" height="30" fill="#8a8a8a"/>
+  
+  <rect x="90" y="180" width="40" height="8" fill="url(#metalGradient)"/>
+  <rect x="105" y="170" width="10" height="30" fill="#8a8a8a"/>
+  
+  <rect x="90" y="240" width="40" height="8" fill="url(#metalGradient)"/>
+  <rect x="105" y="230" width="10" height="30" fill="#8a8a8a"/>
+  
+  <!-- Axes on right rack -->
+  <rect x="670" y="140" width="40" height="12" fill="url(#metalGradient)"/>
+  <rect x="685" y="130" width="10" height="40" fill="#6a4a2a"/>
+  
+  <rect x="670" y="200" width="40" height="12" fill="url(#metalGradient)"/>
+  <rect x="685" y="190" width="10" height="40" fill="#6a4a2a"/>
+  
+  <!-- Armor stands -->
+  <ellipse cx="300" cy="450" rx="40" ry="20" fill="#2a2a2a"/>
+  <rect x="280" y="350" width="40" height="100" fill="#4a4a4a" stroke="#6a6a6a" stroke-width="2"/>
+  <circle cx="300" cy="320" r="25" fill="#5a5a5a" stroke="#7a7a7a" stroke-width="2"/>
+  
+  <ellipse cx="500" cy="450" rx="40" ry="20" fill="#2a2a2a"/>
+  <rect x="480" y="350" width="40" height="100" fill="#4a4a4a" stroke="#6a6a6a" stroke-width="2"/>
+  <circle cx="500" cy="320" r="25" fill="#5a5a5a" stroke="#7a7a7a" stroke-width="2"/>
+  
+  <!-- Anvil -->
+  <rect x="350" y="200" width="100" height="40" fill="#3a3a3a"/>
+  <rect x="360" y="180" width="80" height="20" fill="#5a5a5a"/>
+  <rect x="390" y="240" width="20" height="60" fill="#4a4a4a"/>
+  
+  <!-- Hammer on anvil -->
+  <rect x="400" y="160" width="30" height="8" fill="#6a6a6a"/>
+  <rect x="410" y="150" width="10" height="30" fill="#5a4a3a"/>
+  
+  <!-- Doorway -->
+  <rect x="0" y="275" width="50" height="50" fill="#0a0a0a"/> <!-- West exit -->
+  
+  <!-- Glowing forge in corner -->
+  <rect x="600" y="450" width="80" height="60" fill="#2a1a1a"/>
+  <circle cx="640" cy="470" r="15" fill="#ff4400" opacity="0.9">
+    <animate attributeName="opacity" values="0.7;1.0;0.7" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Title text -->
+  <text x="400" y="580" text-anchor="middle" fill="#888" font-family="serif" font-size="16">Ancient Armory</text>
+</svg>

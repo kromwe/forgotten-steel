@@ -1,0 +1,133 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Detailed crosshatching patterns -->
+    <pattern id="crosshatch" patternUnits="userSpaceOnUse" width="3" height="3">
+      <path d="M0,0 L3,3 M0,3 L3,0" stroke="#444" stroke-width="0.4" opacity="0.4"/>
+    </pattern>
+    
+    <pattern id="stoneWall" patternUnits="userSpaceOnUse" width="12" height="8">
+      <rect width="12" height="8" fill="#e8e8e8"/>
+      <path d="M0,4 L12,4 M6,0 L6,8" stroke="#ccc" stroke-width="0.5"/>
+      <circle cx="3" cy="2" r="0.5" fill="#bbb"/>
+      <circle cx="9" cy="6" r="0.5" fill="#bbb"/>
+    </pattern>
+    
+    <!-- Perspective lighting -->
+    <linearGradient id="corridorDepth" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#333333"/>
+      <stop offset="30%" stop-color="#888888"/>
+      <stop offset="70%" stop-color="#888888"/>
+      <stop offset="100%" stop-color="#333333"/>
+    </linearGradient>
+    
+    <linearGradient id="wallGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0f0f0"/>
+      <stop offset="50%" stop-color="#d0d0d0"/>
+      <stop offset="100%" stop-color="#999999"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with atmospheric depth -->
+  <rect width="800" height="600" fill="url(#corridorDepth)"/>
+  
+  <!-- Stone corridor walls with detailed masonry -->
+  <g fill="url(#stoneWall)" stroke="#555" stroke-width="2">
+    <!-- Left wall with perspective -->
+    <path d="M0,0 L300,150 L300,450 L0,600 Z" fill="url(#wallGradient)"/>
+    
+    <!-- Stone blocks on left wall -->
+    <rect x="20" y="50" width="60" height="30" fill="#ddd" stroke="#888" stroke-width="1"/>
+    <rect x="90" y="80" width="50" height="25" fill="#e0e0e0" stroke="#888" stroke-width="1"/>
+    <rect x="30" y="120" width="55" height="28" fill="#ddd" stroke="#888" stroke-width="1"/>
+    <rect x="100" y="150" width="45" height="22" fill="#e0e0e0" stroke="#888" stroke-width="1"/>
+    
+    <!-- Right wall with perspective -->
+    <path d="M800,0 L500,150 L500,450 L800,600 Z" fill="url(#wallGradient)"/>
+    
+    <!-- Stone blocks on right wall -->
+    <rect x="720" y="50" width="60" height="30" fill="#ddd" stroke="#888" stroke-width="1"/>
+    <rect x="660" y="80" width="50" height="25" fill="#e0e0e0" stroke="#888" stroke-width="1"/>
+    <rect x="715" y="120" width="55" height="28" fill="#ddd" stroke="#888" stroke-width="1"/>
+    <rect x="655" y="150" width="45" height="22" fill="#e0e0e0" stroke="#888" stroke-width="1"/>
+  </g>
+  
+  <!-- Arched ceiling with detailed stonework -->
+  <g fill="#f5f5f5" stroke="#666" stroke-width="2">
+    <path d="M0,0 L300,150 Q400,120 500,150 L800,0 Q400,80 0,0" fill="url(#wallGradient)"/>
+    
+    <!-- Ceiling ribs and supports -->
+    <path d="M150,75 Q400,60 650,75" fill="none" stroke="#aaa" stroke-width="3"/>
+    <path d="M200,90 Q400,75 600,90" fill="none" stroke="#aaa" stroke-width="2"/>
+    <path d="M250,105 Q400,90 550,105" fill="none" stroke="#aaa" stroke-width="2"/>
+  </g>
+  
+  <!-- Floor with perspective tiles -->
+  <g fill="#e0e0e0" stroke="#999" stroke-width="1">
+    <!-- Main floor -->
+    <path d="M0,600 L300,450 L500,450 L800,600 Z" fill="url(#stoneWall)"/>
+    
+    <!-- Floor tile pattern with perspective -->
+    <path d="M100,550 L350,425 L450,425 L700,550" fill="none" stroke="#bbb"/>
+    <path d="M150,575 L375,437 L425,437 L650,575" fill="none" stroke="#bbb"/>
+    <path d="M200,587 L387,443 L413,443 L600,587" fill="none" stroke="#bbb"/>
+    
+    <!-- Vertical floor divisions -->
+    <path d="M50,587 L320,440 M750,587 L480,440" fill="none" stroke="#bbb"/>
+    <path d="M250,593 L390,446 M550,593 L410,446" fill="none" stroke="#bbb"/>
+  </g>
+  
+  <!-- Wall torches with detailed metalwork -->
+  <g>
+    <!-- Left torch -->
+    <g transform="translate(80,200)">
+      <!-- Torch bracket -->
+      <path d="M0,0 L15,5 L15,15 L5,20 L0,15 Z" fill="#666" stroke="#333" stroke-width="1"/>
+      <circle cx="12" cy="10" r="8" fill="#888" stroke="#444" stroke-width="1"/>
+      
+      <!-- Flame with crosshatching -->
+      <path d="M8,2 Q12,-5 16,2 Q14,0 12,1 Q10,0 8,2" fill="url(#crosshatch)" stroke="#777"/>
+      <path d="M10,5 Q12,0 14,5 Q13,3 12,4 Q11,3 10,5" fill="#f8f8f8" opacity="0.9"/>
+    </g>
+    
+    <!-- Right torch -->
+    <g transform="translate(720,200) scale(-1,1)">
+      <!-- Torch bracket -->
+      <path d="M0,0 L15,5 L15,15 L5,20 L0,15 Z" fill="#666" stroke="#333" stroke-width="1"/>
+      <circle cx="12" cy="10" r="8" fill="#888" stroke="#444" stroke-width="1"/>
+      
+      <!-- Flame with crosshatching -->
+      <path d="M8,2 Q12,-5 16,2 Q14,0 12,1 Q10,0 8,2" fill="url(#crosshatch)" stroke="#777"/>
+      <path d="M10,5 Q12,0 14,5 Q13,3 12,4 Q11,3 10,5" fill="#f8f8f8" opacity="0.9"/>
+    </g>
+  </g>
+  
+  <!-- Atmospheric shadows and depth -->
+  <g fill="#222" opacity="0.5">
+    <!-- Wall shadows -->
+    <path d="M0,100 L280,180 L280,420 L0,500" opacity="0.3"/>
+    <path d="M800,100 L520,180 L520,420 L800,500" opacity="0.3"/>
+    
+    <!-- Floor shadows -->
+    <path d="M0,580 L300,440 L320,445 L0,590" opacity="0.4"/>
+    <path d="M800,580 L500,440 L480,445 L800,590" opacity="0.4"/>
+  </g>
+  
+  <!-- Detailed texture overlays -->
+  <g fill="url(#crosshatch)" opacity="0.15">
+    <path d="M0,200 L300,250 L300,400 L0,450"/>
+    <path d="M800,200 L500,250 L500,400 L800,450"/>
+  </g>
+  
+  <!-- Architectural highlights -->
+  <g fill="none" stroke="#fff" stroke-width="1" opacity="0.6">
+    <!-- Wall edge highlights -->
+    <path d="M0,0 L300,150"/>
+    <path d="M800,0 L500,150"/>
+    <path d="M300,150 L300,450"/>
+    <path d="M500,150 L500,450"/>
+    
+    <!-- Ceiling highlights -->
+    <path d="M0,0 Q400,60 800,0"/>
+    <path d="M150,75 Q400,55 650,75"/>
+  </g>
+</svg>

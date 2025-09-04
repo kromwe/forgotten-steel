@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgotten Steel</title>
+</head>
+<body>
+  <div id="game-container">
+    <!-- Title Screen -->
+    <div id="title-screen" class="screen active">
+    <div class="title-content">
+      <h1>Forgotten Steel</h1>
+      <p>A WebGL Text Adventure</p>
+      <div class="title-buttons">
+        <button id="new-game-btn">New Game</button>
+        <button id="load-game-btn">Load Game</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Character Creation Screen -->
+  <div id="character-creation-screen" class="screen">
+    <div class="character-creation-content">
+      <h2>Who Are You?</h2>
+      <p>You awaken with no memory of who you are...</p>
+      <div class="name-input">
+        <label for="player-name">Enter your name:</label>
+        <input type="text" id="player-name" placeholder="Your name">
+      </div>
+      <button id="start-game-btn">Begin Journey</button>
+    </div>
+  </div>
+  
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen">
+    <div id="webgl-container">
+      <canvas id="webgl-canvas"></canvas>
+    </div>
+    <div id="terminal-container">
+      <div id="terminal-output"></div>
+      <div id="terminal-input-container">
+        <span class="prompt">&gt;</span>
+        <input type="text" id="terminal-input" autocomplete="off">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Game Over Screen -->
+  <div id="game-over-screen" class="screen">
+    <div class="game-over-content">
+      <h2>Game Over</h2>
+      <p>Your quest has ended...</p>
+      <div class="game-over-buttons">
+        <button id="load-game-btn-gameover">Load Saved Game</button>
+        <button id="new-game-btn-gameover">Start New Game</button>
+        <button id="title-btn-gameover">Return to Title</button>
+      </div>
+    </div>
+  </div>
+  </div>
+</body>
+</html>

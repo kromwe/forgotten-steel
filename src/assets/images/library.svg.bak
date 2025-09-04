@@ -1,0 +1,100 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="libraryGradient" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" style="stop-color:#2a2a3a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1a2a;stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="bookGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a3a2a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a2a1a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#libraryGradient)"/>
+  
+  <!-- Stone walls -->
+  <rect x="0" y="0" width="800" height="50" fill="#4a4a4a"/>
+  <rect x="0" y="550" width="800" height="50" fill="#4a4a4a"/>
+  <rect x="0" y="0" width="50" height="600" fill="#4a4a4a"/>
+  <rect x="750" y="0" width="50" height="600" fill="#4a4a4a"/>
+  
+  <!-- Tall bookshelves -->
+  <rect x="80" y="80" width="40" height="400" fill="#3a2a1a"/>
+  <rect x="150" y="80" width="40" height="400" fill="#3a2a1a"/>
+  <rect x="610" y="80" width="40" height="400" fill="#3a2a1a"/>
+  <rect x="680" y="80" width="40" height="400" fill="#3a2a1a"/>
+  
+  <!-- Books on shelves (left side) -->
+  <rect x="82" y="100" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="82" y="120" width="36" height="8" fill="#3a2a4a"/>
+  <rect x="82" y="140" width="36" height="8" fill="#4a2a2a"/>
+  <rect x="82" y="160" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="82" y="180" width="36" height="8" fill="#2a3a2a"/>
+  <rect x="82" y="200" width="36" height="8" fill="#4a2a2a"/>
+  <rect x="82" y="220" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="82" y="240" width="36" height="8" fill="#3a2a4a"/>
+  
+  <rect x="152" y="100" width="36" height="8" fill="#2a3a2a"/>
+  <rect x="152" y="120" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="152" y="140" width="36" height="8" fill="#4a2a2a"/>
+  <rect x="152" y="160" width="36" height="8" fill="#3a2a4a"/>
+  <rect x="152" y="180" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="152" y="200" width="36" height="8" fill="#2a3a2a"/>
+  
+  <!-- Books on shelves (right side) -->
+  <rect x="612" y="100" width="36" height="8" fill="#4a2a2a"/>
+  <rect x="612" y="120" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="612" y="140" width="36" height="8" fill="#3a2a4a"/>
+  <rect x="612" y="160" width="36" height="8" fill="#2a3a2a"/>
+  <rect x="612" y="180" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="612" y="200" width="36" height="8" fill="#4a2a2a"/>
+  
+  <rect x="682" y="100" width="36" height="8" fill="url(#bookGradient)"/>
+  <rect x="682" y="120" width="36" height="8" fill="#2a3a2a"/>
+  <rect x="682" y="140" width="36" height="8" fill="#4a2a2a"/>
+  <rect x="682" y="160" width="36" height="8" fill="#3a2a4a"/>
+  <rect x="682" y="180" width="36" height="8" fill="url(#bookGradient)"/>
+  
+  <!-- Reading table in center -->
+  <rect x="300" y="250" width="200" height="100" fill="#4a3a2a"/>
+  <rect x="290" y="240" width="220" height="20" fill="#5a4a3a"/>
+  
+  <!-- Open book on table -->
+  <rect x="350" y="220" width="100" height="60" fill="#f0f0e0" stroke="#d0d0c0" stroke-width="2"/>
+  <line x1="400" y1="220" x2="400" y2="280" stroke="#d0d0c0" stroke-width="1"/>
+  
+  <!-- Text lines on book pages -->
+  <g stroke="#666" stroke-width="1">
+    <line x1="360" y1="235" x2="390" y2="235"/>
+    <line x1="360" y1="245" x2="385" y2="245"/>
+    <line x1="360" y1="255" x2="390" y2="255"/>
+    <line x1="360" y1="265" x2="380" y2="265"/>
+    
+    <line x1="410" y1="235" x2="440" y2="235"/>
+    <line x1="410" y1="245" x2="435" y2="245"/>
+    <line x1="410" y1="255" x2="440" y2="255"/>
+    <line x1="410" y1="265" x2="430" y2="265"/>
+  </g>
+  
+  <!-- Mystical orb providing light -->
+  <circle cx="400" cy="180" r="20" fill="#4466ff" opacity="0.8">
+    <animate attributeName="opacity" values="0.6;1.0;0.6" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="400" cy="180" r="15" fill="#6688ff" opacity="0.9">
+    <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Scattered scrolls on floor -->
+  <ellipse cx="250" cy="450" rx="30" ry="8" fill="#e0e0d0"/>
+  <ellipse cx="550" cy="480" rx="25" ry="6" fill="#e0e0d0"/>
+  
+  <!-- Doorway -->
+  <rect x="700" y="275" width="50" height="50" fill="#0a0a0a"/> <!-- East exit -->
+  
+  <!-- Ancient runes glowing on walls -->
+  <text x="400" y="70" text-anchor="middle" fill="#4466ff" font-family="serif" font-size="20" opacity="0.7">◊ ◈ ◊ ◈ ◊</text>
+  
+  <!-- Title text -->
+  <text x="400" y="580" text-anchor="middle" fill="#888" font-family="serif" font-size="16">Mystic Library</text>
+</svg>
