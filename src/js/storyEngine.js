@@ -225,6 +225,11 @@ export class StoryEngine {
     // Handle conditional exits
     if (typeof exit === 'object' && exit.condition) {
       if (!exit.condition(this.gameState)) {
+        // Check if wolf death story should be triggered
+        if (this.gameState.triggerWolfDeathStory) {
+          this.triggerWolfDeathStory();
+          return;
+        }
         this.terminal.print(exit.blockedMessage || `You cannot go ${normalizedDirection} from here.`, 'error-message');
         return;
       }
@@ -653,6 +658,65 @@ export class StoryEngine {
     this.terminal.print(`You don't see any ${targetName} here to search.`, 'error-message');
   }
   
+  triggerWolfDeathStory() {
+    // Clear the trigger flag
+    this.gameState.triggerWolfDeathStory = false;
+    
+    // Display the dramatic death story
+    this.terminal.print("\n", 'story-text');
+    this.terminal.print("As you turn your back on the terrified children and attempt to flee...", 'story-text');
+    
+    setTimeout(() => {
+      this.terminal.print("\nThe twisted wolf's eyes gleam with predatory hunger. It sees your cowardice.", 'story-text');
+    }, 1500);
+    
+    setTimeout(() => {
+      this.terminal.print("\nWith lightning speed, the beast lunges forward, its massive jaws clamping down on your leg.", 'story-text');
+    }, 3000);
+    
+    setTimeout(() => {
+      this.terminal.print("\nYou scream in agony as razor-sharp teeth tear through flesh and bone.", 'story-text');
+    }, 4500);
+    
+    setTimeout(() => {
+      this.terminal.print("\nThe children's cries echo behind you as the wolf drags you into the darkness.", 'story-text');
+    }, 6000);
+    
+    setTimeout(() => {
+      this.terminal.print("\nYour vision fades as the creature's claws rake across your chest...", 'story-text');
+    }, 7500);
+    
+    setTimeout(() => {
+      this.terminal.print("\nIn your final moments, you hear the wolf's satisfied growl and the children's screams growing distant.", 'story-text');
+    }, 9000);
+    
+    setTimeout(() => {
+      this.terminal.print("\nYou have failed them. You have failed yourself.", 'story-text');
+    }, 10500);
+    
+    setTimeout(() => {
+      this.terminal.print("\n*** YOU HAVE DIED ***", 'error-message');
+      // Trigger game over and return to title screen
+      if (this.combatSystem && this.combatSystem.playerDefeated) {
+        this.combatSystem.playerDefeated();
+      } else {
+        // Fallback game over handling
+        this.gameOverReturnToTitle();
+      }
+    }, 12000);
+  }
+  
+  gameOverReturnToTitle() {
+    // Disable terminal input
+    this.terminal.setEnabled(false);
+    
+    // Show game over screen
+    const gameOverScreen = document.getElementById('game-over-screen');
+    if (gameOverScreen) {
+      gameOverScreen.style.display = 'flex';
+    }
+  }
+
   showHelp() {
     this.terminal.print("Available commands:", 'help-header');
     this.terminal.print("- look / examine [object]: Look around or examine something specific", 'help-item');

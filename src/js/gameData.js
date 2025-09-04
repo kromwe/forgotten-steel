@@ -76,8 +76,40 @@ export const gameData = {
       scene: "village_outskirts",
       description: "The forest thins as the path approaches what appears to be a small village. Nearby, you hear children screaming in terror.",
       exits: {
-        east: "forest_path_west",
-        west: "village_entrance"
+        east: {
+          locationId: "forest_path_west",
+          condition: (gameState) => {
+            // Check if the twisted wolf is still alive and present
+            const location = gameState.storyEngine?.locations?.village_outskirts;
+            if (location && location.npcs && location.npcs.includes('small_creature')) {
+              const wolf = gameState.storyEngine?.npcs?.small_creature;
+              if (wolf && wolf.health > 0 && !wolf.hidden) {
+                // Trigger wolf death story
+                gameState.triggerWolfDeathStory = true;
+                return false;
+              }
+            }
+            return true;
+          },
+          blockedMessage: ""
+        },
+        west: {
+          locationId: "village_entrance",
+          condition: (gameState) => {
+            // Check if the twisted wolf is still alive and present
+            const location = gameState.storyEngine?.locations?.village_outskirts;
+            if (location && location.npcs && location.npcs.includes('small_creature')) {
+              const wolf = gameState.storyEngine?.npcs?.small_creature;
+              if (wolf && wolf.health > 0 && !wolf.hidden) {
+                // Trigger wolf death story
+                gameState.triggerWolfDeathStory = true;
+                return false;
+              }
+            }
+            return true;
+          },
+          blockedMessage: ""
+        }
       },
       npcs: ["child1", "child2", "small_creature"],
       items: ["branch"],
