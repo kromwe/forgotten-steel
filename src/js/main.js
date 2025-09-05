@@ -82,6 +82,7 @@ class Game {
     this.loadGameBtn = document.getElementById('load-game-btn');
     this.startAdventureBtn = document.getElementById('start-game-btn');
     this.characterNameInput = document.getElementById('player-name');
+    this.musicToggleBtn = document.getElementById('music-toggle-btn');
     
     // Game over screen elements
     this.loadGameBtnGameOver = document.getElementById('load-game-btn-gameover');
@@ -111,6 +112,9 @@ class Game {
     if (this.startAdventureBtn) {
       this.startAdventureBtn.addEventListener('click', () => this.startNewGame());
     }
+    if (this.musicToggleBtn) {
+      this.musicToggleBtn.addEventListener('click', () => this.toggleMusic());
+    }
     
     // Game over screen event listeners
     if (this.loadGameBtnGameOver) {
@@ -131,7 +135,8 @@ class Game {
     
     // Handle music based on screen
     if (screenId === 'title-screen') {
-      this.startTitleMusic();
+      // Don't auto-start music - wait for user interaction
+      // this.startTitleMusic();
     } else {
       this.stopTitleMusic();
     }
@@ -178,6 +183,25 @@ class Game {
     if (this.audioManager && this.audioManager.currentMusic) {
       this.audioManager.stopMusic();
       this.titleMusicPlaying = false;
+    }
+  }
+  
+  toggleMusic() {
+    if (!this.audioManager) {
+      this.audioManager = new AudioManager();
+      this.audioManager.init();
+    }
+    
+    if (this.titleMusicPlaying) {
+      this.stopTitleMusic();
+      if (this.musicToggleBtn) {
+        this.musicToggleBtn.textContent = '🔇 Music Off';
+      }
+    } else {
+      this.startTitleMusic();
+      if (this.musicToggleBtn) {
+        this.musicToggleBtn.textContent = '🎵 Music On';
+      }
     }
   }
   
