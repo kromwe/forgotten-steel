@@ -733,13 +733,8 @@ export class StoryEngine {
     
     setTimeout(() => {
       this.terminal.print("\n*** YOU HAVE DIED ***", 'error-message');
-      // Trigger game over and return to title screen
-      if (this.combatSystem && this.combatSystem.playerDefeated) {
-        this.combatSystem.playerDefeated();
-      } else {
-        // Fallback game over handling
-        this.gameOverReturnToTitle();
-      }
+      // Use the story engine's own game over handling for wolf death story
+      this.gameOverReturnToTitle();
     }, 12000);
   }
   
