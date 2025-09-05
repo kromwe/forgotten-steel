@@ -10,7 +10,7 @@ export class CombatSystem {
     this.currentEnemy = null;
     this.playerTurn = true;
     
-    this.initializeCommandHandlers();
+    // Command handlers are set up when combat begins
   }
 
   continueCombatInit() {
@@ -24,7 +24,7 @@ export class CombatSystem {
     this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, "enemy-stats");
     
     // Display player stats
-    this.terminal.print(`Your Health: ${this.gameState.health}/${this.gameState.maxHealth}`, "player-stats");
+    this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, "player-stats");
     
     // Display available combat actions
     this.showCombatActions();
@@ -288,57 +288,7 @@ export class CombatSystem {
     this.originalHandlers = null;
   }
 
-  initializeCommandHandlers() {
-    // Only register attack commands if no story engine is present
-    // The story engine handles attack commands for initiating combat
-    if (!this.storyEngine) {
-    // Attack command during combat
-    this.terminal.registerCommand('^(attack|fight|hit|strike)$', () => {
-      if (this.inCombat && this.playerTurn) {
-        this.playerAttack();
-      } else if (!this.inCombat) {
-        this.terminal.print("There's nothing to attack right now.", 'error-message');
-      } else {
-        this.terminal.print("It's not your turn to attack.", 'error-message');
-      }
-    });
-    }
-    
-    // Defend command during combat
-    this.terminal.registerCommand('^(defend|block|parry)$', () => {
-      if (this.inCombat && this.playerTurn) {
-        this.playerDefend();
-      } else if (!this.inCombat) {
-        this.terminal.print("There's no need to defend right now.", 'error-message');
-      } else {
-        this.terminal.print("It's not your turn to defend.", 'error-message');
-      }
-    });
-    
-    // Use item during combat
-    this.terminal.registerCommand('^(use) (.+)$', (input) => {
-      if (this.inCombat && this.playerTurn) {
-        const itemName = input.match(/^use\s+(.+)$/i)[1].toLowerCase();
-        this.useItemInCombat(itemName);
-      } else if (!this.inCombat) {
-        // Let the story engine handle normal item use
-        return false; // Don't handle the command here
-      } else {
-        this.terminal.print("It's not your turn to use an item.", 'error-message');
-      }
-    });
-    
-    // Flee command during combat
-    this.terminal.registerCommand('^(flee|escape|run)$', () => {
-      if (this.inCombat && this.playerTurn) {
-        this.attemptFlee();
-      } else if (!this.inCombat) {
-        this.terminal.print("There's nothing to flee from right now.", 'error-message');
-      } else {
-        this.terminal.print("It's not your turn to flee.", 'error-message');
-      }
-    });
-  }
+
 
   initiateCombat(enemy) {
     this.inCombat = true;
@@ -373,52 +323,6 @@ export class CombatSystem {
     this.continueCombatInit();
   }
 
-  getAvailableWeapons() {
-    return this.gameState.inventory.filter(item => item.type === "weapon");
-  }
-
-  promptWeaponEquip(availableWeapons) {
-    this.terminal.print("\nYou have no weapon equipped, but you have weapons in your inventory:", "combat-warning");
-    
-    availableWeapons.forEach((weapon, index) => {
-      this.terminal.print(`${index + 1}. ${weapon.name} (Damage: ${weapon.damage})`, "weapon-option");
-    });
-    
-    this.terminal.print("\nWould you like to equip a weapon before fighting?", "combat-prompt");
-    this.terminal.print("Type the number of the weapon to equip it, or 'no' to fight unarmed:", "combat-prompt");
-    
-    // Set up temporary command handlers for weapon selection
-    this.setupWeaponSelectionHandlers(availableWeapons);
-  }
-
-  setupWeaponSelectionHandlers(availableWeapons) {
-    // Store original command handlers to restore later
-    this.originalHandlers = { ...this.terminal.commandHandlers };
-    
-    // Clear existing handlers
-    this.terminal.commandHandlers = {};
-    
-    // Add weapon selection handlers
-    for (let i = 0; i < availableWeapons.length; i++) {
-      const weaponIndex = i;
-      this.terminal.registerCommand(`^${i + 1}$`, () => {
-        const weapon = availableWeapons[weaponIndex];
-        if (this.gameState.equipWeapon(weapon.id)) {
-          this.terminal.print(`You equip the ${weapon.name}.`, "combat-equip");
-          this.restoreCommandHandlers();
-          this.continueCombatInit();
-        }
-      });
-    }
-    
-    // Add 'no' option
-    this.terminal.registerCommand("^(no|n)$", () => {
-      this.terminal.print("You decide to fight unarmed.", "combat-choice");
-      this.restoreCommandHandlers();
-      this.continueCombatInit();
-    });
-  }
-
   showCombatActions() {
     this.terminal.print("\nAvailable actions:", 'combat-actions-header');
     this.terminal.print("- attack: Attack the enemy", 'combat-action');
@@ -426,71 +330,6 @@ export class CombatSystem {
     this.terminal.print("- use [item]: Use an item from your inventory", 'combat-action');
     this.terminal.print("- flee: Attempt to escape from combat", 'combat-action');
     this.terminal.print("- switch weapon: Change your equipped weapon", 'combat-action');
-  }
-
-  continueCombatInit() {
-    // Set up combat command handlers
-    this.setupCombatHandlers();
-    // Display enemy stats
-    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, "enemy-stats");
-    
-    // Display player stats
-    this.terminal.print(`Your Health: ${this.gameState.health}/${this.gameState.maxHealth}`, "player-stats");
-    
-    // Display available combat actions
-    this.showCombatActions();
-  }
-
-  getAvailableWeapons() {
-    return this.gameState.inventory.filter(item => item.type === "weapon");
-  }
-
-  promptWeaponEquip(availableWeapons) {
-    this.terminal.print("\nYou have no weapon equipped, but you have weapons in your inventory:", "combat-warning");
-    
-    availableWeapons.forEach((weapon, index) => {
-      this.terminal.print(`${index + 1}. ${weapon.name} (Damage: ${weapon.damage})`, "weapon-option");
-    });
-    
-    this.terminal.print("\nWould you like to equip a weapon before fighting?", "combat-prompt");
-    this.terminal.print("Type the number of the weapon to equip it, or 'no' to fight unarmed:", "combat-prompt");
-    
-    // Set up temporary command handlers for weapon selection
-    this.setupWeaponSelectionHandlers(availableWeapons);
-  }
-
-  setupWeaponSelectionHandlers(availableWeapons) {
-    // Store original command handlers to restore later
-    this.originalHandlers = { ...this.terminal.commandHandlers };
-    
-    // Clear existing handlers
-    this.terminal.commandHandlers = {};
-    
-    // Add weapon selection handlers
-    for (let i = 0; i < availableWeapons.length; i++) {
-      const weaponIndex = i;
-      this.terminal.registerCommand(`^${i + 1}$`, () => {
-        const weapon = availableWeapons[weaponIndex];
-        if (this.gameState.equipWeapon(weapon.id)) {
-          this.terminal.print(`You equip the ${weapon.name}.`, "combat-equip");
-          this.restoreCommandHandlers();
-          this.continueCombatInit();
-        }
-      });
-    }
-    
-    // Add 'no' option
-    this.terminal.registerCommand("^(no|n)$", () => {
-      this.terminal.print("You decide to fight unarmed.", "combat-choice");
-      this.restoreCommandHandlers();
-      this.continueCombatInit();
-    });
-  }
-
-  restoreCommandHandlers() {
-    // Restore original command handlers
-    this.terminal.commandHandlers = this.originalHandlers;
-    this.originalHandlers = null;
   }  
   playerAttack() {
     // Check if player has no weapon and suggest branch if available
@@ -677,15 +516,14 @@ export class CombatSystem {
     const damage = Math.max(1, Math.floor((baseDamage * randomFactor) - damageReduction));
     
     // Apply damage to player
-    this.gameState.health -= damage;
+    this.gameState.takeDamage(damage);
     
     // Display attack message
     this.terminal.print(`${this.currentEnemy.name} attacks you, dealing ${damage} damage!`, 'enemy-attack');
-    this.terminal.print(`Your Health: ${this.gameState.health}/${this.gameState.maxHealth}`, 'player-stats');
+    this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, 'player-stats');
     
     // Check if player is defeated
-    if (this.gameState.health <= 0) {
-      this.gameState.health = 0;
+    if (this.gameState.playerHealth <= 0) {
       this.playerDefeated();
       return;
     }
@@ -703,8 +541,8 @@ export class CombatSystem {
     if (this.currentEnemy.rewards) {
       // Handle experience or stat increases
       if (this.currentEnemy.rewards.healthIncrease) {
-        this.gameState.maxHealth += this.currentEnemy.rewards.healthIncrease;
-        this.gameState.health += this.currentEnemy.rewards.healthIncrease;
+        this.gameState.playerMaxHealth += this.currentEnemy.rewards.healthIncrease;
+        this.gameState.playerHealth += this.currentEnemy.rewards.healthIncrease;
         this.terminal.print(`Your maximum health increases by ${this.currentEnemy.rewards.healthIncrease}!`, 'reward');
       }
       

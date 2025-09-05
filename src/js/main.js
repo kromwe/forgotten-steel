@@ -43,8 +43,7 @@ class Game {
     this.gameState.playerName = '';
     this.gameState.currentLocation = 'crossroads';
     this.gameState.inventory = [];
-    this.gameState.health = 100;
-    this.gameState.maxHealth = 100;
+    // Health properties are managed by GameState class internally
     this.gameState.experience = 0;
     this.gameState.level = 1;
     this.gameState.equipment = {

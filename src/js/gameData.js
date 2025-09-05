@@ -675,8 +675,8 @@ export const gameData = {
       onUse: (gameState, terminal) => {
         if (gameState.memoryFragments.length >= 5) {
           terminal.print("The crystal glows brightly as it absorbs your recovered memories. You feel your mind becoming clearer and more focused. Your maximum health increases!", 'memory-flash');
-          gameState.maxHealth += 15;
-          gameState.health += 15;
+          gameState.playerMaxHealth += 15;
+          gameState.heal(15);
           return true; // Crystal is consumed
         } else {
           terminal.print("The crystal glows faintly, but you need more memories to unlock its power.", 'description');
