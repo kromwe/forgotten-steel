@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -43,7 +44,7 @@ module.exports = (env, argv) => {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [isProduction ? MiniCssExtractPlugin.loader : 'style-loader', 'css-loader']
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
@@ -65,6 +66,9 @@ module.exports = (env, argv) => {
         { from: 'src/assets', to: 'assets' }
       ],
     }),
+    ...(isProduction ? [new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css',
+    })] : []),
   ],
   devServer: {
     static: {
