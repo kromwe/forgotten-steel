@@ -23,6 +23,8 @@ export class GameState {
     this.equippedWeapon = null;
     this.equippedArmor = null;
     
+
+    
     // Game flags
     this.flags = {
       metChildren: false,

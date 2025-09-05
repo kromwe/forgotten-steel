@@ -280,6 +280,12 @@ input[type="text"]:focus {
   color: #f00;
 }
 
+.ambient-creature {
+  color: #ff8c00;
+  font-style: italic;
+  text-shadow: 0 0 5px #ff8c00;
+}
+
 /* Mobile-Friendly Styles */
 @media screen and (max-width: 768px) {
   /* Larger touch-friendly buttons */

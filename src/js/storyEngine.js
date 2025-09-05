@@ -12,9 +12,37 @@ export class StoryEngine {
     this.combatSystem = null;
     this.memorySystem = null;
     
+    // Ambient creature system
+    this.ambientCreatures = this.initializeAmbientCreatures();
+    
     this.initializeCommandHandlers();
   }
   
+  initializeAmbientCreatures() {
+    return [
+      "A bird flies out of a nearby tree. It seems like it stares at you before it flies out of sight.",
+      "A small shadow figure darts across the path in front of you. You can't identify what it was but it leaves you with an uneasy feeling.",
+      "A rustling in the bushes catches your attention, but when you look, nothing is there.",
+      "A distant howl echoes through the area, sending a chill down your spine.",
+      "Something scurries through the underbrush nearby, too quick to see clearly.",
+      "A pair of glowing eyes watches you from the darkness before disappearing.",
+      "The sound of wings flapping overhead draws your gaze upward, but you see nothing.",
+      "A twig snaps somewhere behind you, but when you turn around, the area is empty.",
+      "A strange chittering sound comes from somewhere nearby, then falls silent.",
+      "You catch a glimpse of movement in your peripheral vision, but it vanishes when you look directly.",
+      "A low growl rumbles from somewhere in the distance, barely audible.",
+      "Something brushes against your leg briefly before darting away into the shadows.",
+      "The faint sound of padded footsteps follows you for a moment, then stops.",
+      "A small creature skitters across your path, disappearing into a crevice before you can identify it.",
+      "You hear the soft hoot of an owl, though you can't see it anywhere.",
+      "A gentle breeze carries an unfamiliar scent, wild and untamed.",
+      "The grass rustles as if something small is moving through it, just out of sight.",
+      "A shadow passes overhead, but when you look up, the sky appears empty.",
+      "You hear the distant splash of something entering water, though no water source is visible.",
+      "A soft whimpering sound drifts from somewhere nearby, then fades away."
+    ];
+  }
+
   initializeCommandHandlers() {
     // Movement commands
     this.terminal.registerCommand('^(go|move|walk|run|travel) (to )?(north|south|east|west|n|s|e|w)', (input) => {
@@ -241,6 +269,9 @@ export class StoryEngine {
     // Change location
     this.gameState.changeLocation(targetLocationId);
     this.terminal.print(`You go ${normalizedDirection}.`, 'action-result');
+    
+    // Check for ambient creature encounter
+    this.checkAmbientCreatureEncounter(targetLocationId);
     
     // Describe new location
     this.describeCurrentLocation();
@@ -792,6 +823,23 @@ export class StoryEngine {
     this.terminal.print(`Memory recovered: ${this.gameState.memoryRecovered}%`, 'status-item');
   }
   
+  checkAmbientCreatureEncounter(locationId) {
+    // Don't show creatures in the starting location
+    if (locationId === 'crossroads') {
+      return;
+    }
+    
+    // 25% chance of encountering an ambient creature
+    if (Math.random() < 0.25) {
+      // Select a random creature description
+      const randomIndex = Math.floor(Math.random() * this.ambientCreatures.length);
+      const creatureDescription = this.ambientCreatures[randomIndex];
+      
+      // Display the creature encounter with special styling
+      this.terminal.print(creatureDescription, 'ambient-creature');
+    }
+  }
+
   update() {
     // Update game logic here if needed
     // This method is called every frame from the game loop

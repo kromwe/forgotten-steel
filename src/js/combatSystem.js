@@ -814,8 +814,11 @@ export class CombatSystem {
       this.setupGameOverHandler();
     }
     
-    // End combat
-    this.endCombat();
+    // End combat but don't restore command handlers for game over scenarios
+    this.inCombat = false;
+    this.currentEnemy = null;
+    this.playerTurn = false;
+    this.defending = false;
   }
   
   setupGameOverHandler() {
