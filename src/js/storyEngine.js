@@ -265,9 +265,11 @@ export class StoryEngine {
         console.log('triggerWolfDeathStory flag:', triggerFlag);
         
         if (triggerFlag) {
-          console.log('Triggering wolf death story');
+          console.log('*** TRIGGERING WOLF DEATH STORY ***');
           this.triggerWolfDeathStory();
           return;
+        } else {
+          console.log('*** triggerWolfDeathStory flag is false, not triggering story ***');
         }
         console.log('Movement blocked, showing blocked message');
         this.terminal.print(exit.blockedMessage || `You cannot go ${normalizedDirection} from here.`, 'error-message');
