@@ -89,6 +89,11 @@ export const gameData = {
             if (!gameState.getFlag('savedChildren') && hasWolf) {
               console.log('East exit condition - Setting triggerWolfDeathStory to true');
               gameState.setFlag('triggerWolfDeathStory', true);
+              console.log('East exit condition - Flag set, triggering story immediately');
+              // Trigger the wolf death story immediately
+              setTimeout(() => {
+                storyEngine.triggerWolfDeathStory();
+              }, 100);
               return false;
             }
             console.log('East exit condition - Allowing movement');
@@ -109,6 +114,11 @@ export const gameData = {
             if (!gameState.getFlag('savedChildren') && hasWolf) {
               console.log('West exit condition - Setting triggerWolfDeathStory to true');
               gameState.setFlag('triggerWolfDeathStory', true);
+              console.log('West exit condition - Flag set, triggering story immediately');
+              // Trigger the wolf death story immediately
+              setTimeout(() => {
+                storyEngine.triggerWolfDeathStory();
+              }, 100);
               return false;
             }
             console.log('West exit condition - Allowing movement');
