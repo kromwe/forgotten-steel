@@ -1,4 +1,5 @@
 // Game state management
+import { gameData } from './gameData.js';
 
 export class GameState {
   constructor() {
@@ -36,7 +37,8 @@ export class GameState {
       rememberedWizard: false,
       rememberedQueen: false,
       foundTower: false,
-      triggerWolfDeathStory: false
+      triggerWolfDeathStory: false,
+      blacksmithOfferedSword: false
     };
   }
   
@@ -89,8 +91,14 @@ export class GameState {
       rememberedWizard: false,
       rememberedQueen: false,
       foundTower: false,
-      triggerWolfDeathStory: false
+      triggerWolfDeathStory: false,
+      blacksmithOfferedSword: false
     };
+    
+    // Ensure new flags exist in loaded save data
+    if (!this.flags.hasOwnProperty('blacksmithOfferedSword')) {
+      this.flags.blacksmithOfferedSword = false;
+    }
     
     // Always reset story trigger flags when loading
     this.flags.triggerWolfDeathStory = false;
@@ -220,5 +228,9 @@ export class GameState {
   
   hasItem(itemId) {
     return this.inventory.some(item => item.id === itemId);
+  }
+
+  getCurrentLocationData() {
+    return gameData.locations[this.currentLocation];
   }
 }

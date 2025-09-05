@@ -9,6 +9,9 @@ import { MemorySystem } from './memorySystem.js';
 import { initializeMemorySystem } from './memoryData.js';
 import { GameState } from './gameState.js';
 import { AudioManager } from './audioManager.js';
+import { imagePreloader } from './imagePreloader.js';
+import { imageValidator } from './imageValidator.js';
+import { imageHelpers } from './imageHelpers.js';
 
 class Game {
   constructor() {
@@ -375,7 +378,7 @@ class Game {
     this.terminal.print('Game loaded successfully. Welcome back!', 'system-message');
   }
   
-  startNewGame() {
+  async startNewGame() {
     const characterName = this.characterNameInput?.value.trim();
     
     if (!characterName) {
@@ -399,8 +402,14 @@ class Game {
     // Transition to the game screen
     this.showScreen('game-screen');
     
-    // Initialize the game world
-    this.initializeGame();
+    // Initialize the game world with image system
+    try {
+      await this.initializeGame();
+      console.log('🎮 Game initialized successfully with image system');
+    } catch (error) {
+      console.error('❌ Error initializing game:', error);
+      // Continue anyway - basic game functionality should still work
+    }
   }
   
   cleanupGameSystems() {
@@ -416,16 +425,25 @@ class Game {
     this.memorySystem = null;
   }
   
-  initializeGame() {
+  async initializeGame() {
     // Initialize WebGL renderer
     const canvas = document.getElementById('webgl-canvas');
     if (canvas) {
       this.webglRenderer = initWebGL(canvas);
+      
+      // Make image preloader globally available for WebGL renderer
+      window.imagePreloader = imagePreloader;
+      window.imageValidator = imageValidator;
+      window.imageHelpers = imageHelpers;
+      
       this.renderCurrentScene();
     }
 
     // Initialize Terminal
     this.terminal = new Terminal('terminal-output', 'terminal-input');
+    
+    // Validate and preload images
+    await this.initializeImageSystem();
     
     // Initialize Memory System
     this.memorySystem = new MemorySystem(this.gameState, this.terminal, this.webglRenderer, null);
@@ -458,6 +476,41 @@ class Game {
     
     // Start the game loop for memory effects
     this.startGameLoop();
+  }
+  
+  /**
+   * Initialize the image system with validation and preloading
+   */
+  async initializeImageSystem() {
+    try {
+      // Validate all location images
+      const validationReport = await imageValidator.validateAllLocationImages(gameData);
+      
+      if (validationReport.allMissingImages.length > 0) {
+        console.warn('⚠️ Some location images are missing:', validationReport.allMissingImages);
+        // Still continue - the system will use fallbacks
+      } else {
+        console.log('✅ All location images validated successfully');
+      }
+      
+      // Preload critical images for smooth gameplay
+      const preloadResults = await imagePreloader.smartPreload(gameData, this.gameState);
+      
+      console.log('🖼️ Image preloading completed:', {
+        currentLocation: preloadResults.currentLocation.length,
+        nearbyLocations: preloadResults.nearbyLocations.length,
+        eventImages: preloadResults.eventImages.length,
+        priorityImages: preloadResults.priorityImages.length
+      });
+      
+      // Log cache statistics
+      const cacheStats = imagePreloader.getCacheStats();
+      console.log('📊 Image cache stats:', cacheStats);
+      
+    } catch (error) {
+      console.error('❌ Error initializing image system:', error);
+      // Continue anyway - the game should still work with fallbacks
+    }
   }
   
   // Command handling is now managed by StoryEngine

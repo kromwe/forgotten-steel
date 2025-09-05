@@ -218,7 +218,7 @@ input[type="text"]:focus {
 
 /* WebGL Scene Container */
 #webgl-container {
-  height: 60%;
+  height: 50%;
   width: 100%;
   background-color: #111;
   position: relative;
@@ -236,7 +236,7 @@ input[type="text"]:focus {
 
 /* Terminal Container */
 #terminal-container {
-  height: 60%;
+  height: 50%;
   width: 100%;
   background-color: #000;
   border-top: 2px solid #f8d000;
@@ -256,6 +256,7 @@ input[type="text"]:focus {
 
 #terminal-input-container {
   display: flex;
+  align-items: center;
   padding: 0.5rem 0;
   border-top: 1px solid #333;
 }
@@ -263,6 +264,7 @@ input[type="text"]:focus {
 .prompt {
   color: #0f0;
   font-size: 1rem;
+  line-height: 1.4;
   margin-right: 0.5rem;
 }
 
@@ -272,6 +274,8 @@ input[type="text"]:focus {
   border: none;
   color: #0f0;
   font-size: 1rem;
+  line-height: 1.4;
+  padding: 0;
 }
 
 #terminal-input:focus {
@@ -355,8 +359,41 @@ input[type="text"]:focus {
 }
 
 .combat-health {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.enemy-health {
   color: #ffdd44;
   font-weight: bold;
+}
+
+/* Conversation System Styles */
+.npc-dialog {
+  color: #88ccff;
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.player-dialog {
+  color: #ffaa88;
+  margin: 5px 0;
+}
+
+.conversation-prompt {
+  color: #cccccc;
+  margin: 10px 0 5px 0;
+}
+
+.conversation-choice {
+  color: #aaffaa;
+  margin: 2px 0;
+  padding-left: 10px;
+}
+
+.conversation-choice:hover {
+  color: #ffffff;
+  background-color: rgba(170, 255, 170, 0.1);
 }
 
 .player-attack {

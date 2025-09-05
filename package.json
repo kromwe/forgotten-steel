@@ -1,9 +1,9 @@
 {
-  "name": "quest-of-memory",
+  "name": "forgotten-steel",
   "version": "1.0.0",
   "description": "A WebGL text adventure game",
   "main": "electron-main.js",
-  "homepage": "https://kromwe.github.io/forgotten-steel",
+  "homepage": "https://github.com/kromwe/forgotten-steel/",
   "scripts": {
     "start": "webpack serve --mode development --open",
     "build": "webpack --mode production",
@@ -31,7 +31,6 @@
     "electron-builder": "^26.0.12",
     "gl-matrix": "^3.4.3",
     "html-webpack-plugin": "^5.5.3",
-    "mini-css-extract-plugin": "^2.9.4",
     "style-loader": "^3.3.3",
     "wait-on": "^8.0.4",
     "webpack": "^5.88.2",
@@ -64,9 +63,7 @@
     "mac": {
       "target": {
         "target": "zip",
-        "arch": [
-          "x64"
-        ]
+        "arch": ["x64"]
       },
       "category": "public.app-category.games",
       "minimumSystemVersion": "10.15.0"

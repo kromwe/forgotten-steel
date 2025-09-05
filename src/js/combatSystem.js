@@ -21,7 +21,7 @@ export class CombatSystem {
     this.displayWeaponStatus();
     
     // Display enemy stats
-    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, "combat-health");
+    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, "enemy-health");
     
     // Display player stats
     this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, "combat-health");
@@ -295,6 +295,11 @@ export class CombatSystem {
     this.currentEnemy = enemy;
     this.playerTurn = true;
     
+    // Switch to wolf attack image if fighting the wolf
+    if (enemy.name === 'Twisted Wolf') {
+      this.storyEngine.webglRenderer.setDynamicSceneImage('assets/images/Wolf_Attacks.png');
+    }
+    
     // Display combat start message
     this.terminal.print(`\n--- COMBAT STARTED ---`, "combat-header");
     this.terminal.print(`You are fighting ${enemy.name}!`, "combat-start");
@@ -401,7 +406,7 @@ export class CombatSystem {
     
     // Switch to enemy turn
     this.playerTurn = false;
-    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, 'combat-health');
+    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, 'enemy-health');
     
     // Enemy attacks after a short delay
     setTimeout(() => this.enemyTurn(), 1500);
@@ -740,6 +745,9 @@ export class CombatSystem {
     this.defending = false;
     
     this.terminal.print("\n--- COMBAT ENDED ---", 'combat-header');
+    
+    // Restore proper location image based on current game state
+    this.storyEngine.describeCurrentLocation();
     
     // Restore original command handlers
     this.restoreCommandHandlers();

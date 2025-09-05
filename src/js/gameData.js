@@ -7,6 +7,10 @@ export const gameData = {
     crossroads: {
       name: "Crossroads",
       scene: "crossroads",
+      // Image configuration for different states
+      images: {
+        default: "/assets/images/Forest_Path.png"
+      },
       description: "You stand at a dusty crossroads. The dirt beneath your feet is stained with what appears to be dried blood—your blood. Your head throbs with pain, and your memory is a fog. Paths lead in four directions through the surrounding forest.",
       exits: {
         north: "forest_path_north",
@@ -74,6 +78,14 @@ export const gameData = {
     village_outskirts: {
       name: "Village Outskirts",
       scene: "village_outskirts",
+      // Image configuration with event-based variants
+      images: {
+        default: "/assets/images/Village_Entrance.png",
+        conditions: {
+          "flag:savedChildren": "/assets/images/Forest_Path.png",
+          "npc:small_creature": "/assets/images/Wolf_Children.png"
+        }
+      },
       description: "The forest thins as the path approaches what appears to be a small village. Nearby, you hear children screaming in terror.",
       exits: {
         east: {
@@ -134,6 +146,10 @@ export const gameData = {
     village_entrance: {
       name: "Village Entrance",
       scene: "village_entrance",
+      // Image configuration with time and event variants
+      images: {
+        default: "/assets/images/Village_Entrance.png"
+      },
       description: "You stand at the entrance to a modest village. Simple wooden buildings line a central dirt road. Villagers move about, though they seem wary and on edge.",
       exits: {
         east: "village_outskirts",
@@ -166,6 +182,10 @@ export const gameData = {
     village_square: {
       name: "Village Square",
       scene: "village_square",
+      // Image configuration for village square
+      images: {
+        default: "/assets/images/Cottage.png"
+      },
       description: "The central square of the village. A well sits in the middle, and villagers gather in small groups, speaking in hushed tones. A village elder stands near the well.",
       exits: {
         east: "village_entrance",
@@ -233,7 +253,7 @@ export const gameData = {
     village_elder_house: {
       name: "Village Elder's House",
       scene: "village_elder_house",
-      description: "The home of the village elder. It's larger than most houses in the village, with bookshelves lining the walls and a large table in the center.",
+      description: "The home of the village elder. It's larger than most houses in the village, with bookshelves lining the walls and a large table in the center with a map spread across it.",
       exits: {
         south: "village_square"
       },
@@ -249,7 +269,7 @@ export const gameData = {
         },
         {
           keywords: ["map"],
-          description: "The map shows the village and surrounding forest. A location to the north is marked with a red X and labeled 'Creature's Den'.",
+          description: "The map shows the village and surrounding forest. A location to the north is marked with a red X and labeled 'Creature's Den'. The map indicates you should go to the crossroads and head north to find the path to the creature's den.",
           revealsItem: "map_to_den",
           autoTake: true
         },
@@ -320,6 +340,10 @@ export const gameData = {
     creature_den_entrance: {
       name: "Creature's Den - Entrance",
       scene: "cave_entrance",
+      // Image configuration for before/after states
+      images: {
+        default: "/assets/images/placeholder.svg"
+      },
       description: "A dark cave mouth opens in the side of a small hill. Strange scratches mark the rocks around the entrance, and an unnatural silence hangs in the air.",
       exits: {
         south: "forest_path_north",
@@ -344,6 +368,14 @@ export const gameData = {
     creature_den_interior: {
       name: "Creature's Den - Interior",
       scene: "cave_interior",
+      // Image configuration for combat and post-combat states
+      images: {
+        default: "cave_interior",
+        conditions: {
+          "npc:cave_creature": "cave_interior_creature",
+          "flag:defeatedCaveCreature": "cave_interior_empty"
+        }
+      },
       description: "The inside of the cave is damp and dark. Bones litter the floor, and a foul smell permeates the air. At the back of the cave, a large creature stirs.",
       exits: {
         south: "creature_den_entrance"
@@ -847,10 +879,15 @@ export const gameData = {
       hidden: false,
       onTalk: (gameState, terminal, storyEngine) => {
         if (gameState.getFlag('savedChildren')) {
-          terminal.print("'Heard you saved those kids,' the blacksmith says, pausing her work. 'We need more people like you around here. Take that old sword if you want—it's not much, but it's better than nothing.'", 'npc-dialog');
-          
-          // Make the rusty sword visible
-          storyEngine.items['rusty_sword'].hidden = false;
+          if (gameState.getFlag('blacksmithOfferedSword')) {
+            terminal.print("'I'm busy with my work,' the blacksmith says, wiping sweat from her brow. 'That sword's still there if you haven't taken it yet.'", 'npc-dialog');
+          } else {
+            terminal.print("'Heard you saved those kids,' the blacksmith says, pausing her work. 'We need more people like you around here. Take that old sword if you want—it's not much, but it's better than nothing.'", 'npc-dialog');
+            
+            // Make the rusty sword visible and set flag
+            storyEngine.items['rusty_sword'].hidden = false;
+            gameState.setFlag('blacksmithOfferedSword', true);
+          }
         } else {
           terminal.print("'Don't have time to chat,' the blacksmith says without looking up from her work. 'Unless you're buying something.'", 'npc-dialog');
         }
@@ -865,22 +902,203 @@ export const gameData = {
       talkable: true,
       attackable: false,
       hidden: false,
-      onTalk: (gameState, terminal, storyEngine) => {
-        terminal.print("'Welcome to the Twisted Oak Inn,' the innkeeper says with a smile. 'Not many travelers these days, what with the strange creatures about. Can I get you something to drink?'", 'npc-dialog');
-        
-        if (gameState.getFlag('defeatedVillageMonster')) {
-          terminal.print("'You're the one who killed that beast in the cave? Drinks are on the house! We haven't had a proper hero around here since... well, since before the wizard took the queen.'", 'npc-dialog');
-          
-          if (!gameState.hasItem('health_potion')) {
-            terminal.print("'Here, take this healing potion. A traveling merchant left it as payment. Might come in handy for someone like you.'", 'npc-dialog');
-            
-            // Add health potion to inventory
-            gameState.addToInventory({
-              id: 'health_potion',
-              ...storyEngine.items['health_potion']
-            });
-            
-            terminal.print("You received: Health Potion", 'item-received');
+      conversation: {
+        start: "greeting",
+        nodes: {
+          greeting: {
+            npcText: "'Welcome to the Twisted Oak Inn,' the innkeeper says with a smile. 'Not many travelers these days, what with the strange creatures about. Can I get you something to drink?'",
+            choices: [
+              {
+                text: "Yes, I'd like a drink",
+                playerText: "Yes, I'd like a drink",
+                keywords: ["yes", "drink", "ale", "beer"],
+                nextNode: "offer_drink"
+              },
+              {
+                text: "No, thank you",
+                playerText: "No, thank you",
+                keywords: ["no", "thanks"],
+                nextNode: "no_drink"
+              },
+              {
+                text: "Tell me about the creatures",
+                playerText: "Tell me about these strange creatures",
+                keywords: ["creatures", "monsters", "beasts"],
+                nextNode: "creature_info"
+              },
+              {
+                text: "End conversation",
+                playerText: "I should be going now",
+                keywords: ["end", "leave", "goodbye", "bye"],
+                nextNode: "end"
+              }
+            ]
+          },
+          offer_drink: {
+            npcText: function(gameState) {
+              if (gameState.getFlag('defeatedVillageMonster')) {
+                return "'You're the one who killed that beast in the cave? Drinks are on the house! We haven't had a proper hero around here since... well, since before the wizard took the queen.'";
+              } else if (gameState.getFlag('savedChildren')) {
+                return "'You're the one who saved those children from the twisted wolf! Drinks are on the house! Heroes like you deserve our gratitude.'";
+              } else {
+                return "'That'll be 5 gold pieces for a mug of our finest ale.'";
+              }
+            },
+            onEnter: function(gameState, terminal, storyEngine) {
+              if (gameState.getFlag('defeatedVillageMonster') || gameState.getFlag('savedChildren')) {
+                terminal.print("You enjoy a refreshing ale on the house. The warmth spreads through your body.", 'item-use');
+                gameState.heal(5);
+                
+                if (!gameState.hasItem('health_potion')) {
+                  terminal.print("'Here, take this healing potion. A traveling merchant left it as payment. Might come in handy for someone like you.'", 'npc-dialog');
+                  gameState.addToInventory({
+                    id: 'health_potion',
+                    ...storyEngine.items['health_potion']
+                  });
+                  terminal.print("You received: Health Potion", 'item-received');
+                }
+              }
+            },
+            choices: [
+              {
+                text: "Thank you",
+                playerText: "Thank you for the drink",
+                keywords: ["thanks", "thank"],
+                nextNode: "greeting"
+              },
+              {
+                text: "Tell me about the creatures",
+                playerText: "Tell me about these strange creatures",
+                keywords: ["creatures", "monsters", "beasts"],
+                nextNode: "creature_info"
+              },
+              {
+                text: "End conversation",
+                playerText: "I should be going now",
+                keywords: ["end", "leave", "goodbye", "bye"],
+                nextNode: "end"
+              }
+            ]
+          },
+          no_drink: {
+            npcText: "'No problem at all. If you change your mind, I'll be here. These are dangerous times - stay safe out there.'",
+            choices: [
+              {
+                text: "I will, thank you",
+                playerText: "I will, thank you",
+                keywords: ["thanks", "thank", "will"],
+                nextNode: "greeting"
+              },
+              {
+                text: "Tell me about the creatures",
+                playerText: "Tell me about these strange creatures",
+                keywords: ["creatures", "monsters", "beasts"],
+                nextNode: "creature_info"
+              },
+              {
+                text: "End conversation",
+                playerText: "I should be going now",
+                keywords: ["end", "leave", "goodbye", "bye"],
+                nextNode: "end"
+              }
+            ]
+          },
+          creature_info: {
+            npcText: "'Aye, terrible things they are. Twisted beasts that were once normal animals, corrupted by dark magic. They started appearing after that wizard attacked the royal castle and took our queen.'",
+            choices: [
+              {
+                text: "Tell me about the wizard",
+                playerText: "Tell me more about this wizard",
+                keywords: ["wizard", "magic", "dark"],
+                nextNode: "wizard_info"
+              },
+              {
+                text: "Where do these creatures come from?",
+                playerText: "Where do these creatures come from?",
+                keywords: ["where", "come", "from"],
+                nextNode: "creature_origin"
+              },
+              {
+                text: "Can I get a drink?",
+                playerText: "Can I get a drink?",
+                keywords: ["drink", "ale", "beer"],
+                nextNode: "offer_drink"
+              },
+              {
+                text: "Go back",
+                playerText: "Let me ask something else",
+                keywords: ["back", "return", "else"],
+                nextNode: "greeting"
+              },
+              {
+                text: "End conversation",
+                playerText: "I should be going now",
+                keywords: ["end", "leave", "goodbye", "bye"],
+                nextNode: "end"
+              }
+            ]
+          },
+          wizard_info: {
+            npcText: "'They say he has a tower deep in the eastern forest. No one who's gone looking for it has returned. The creatures seem to be his doing - corrupting the natural order with his foul magic.'",
+            choices: [
+              {
+                text: "Where do these creatures come from?",
+                playerText: "Where do these creatures come from?",
+                keywords: ["where", "come", "from"],
+                nextNode: "creature_origin"
+              },
+              {
+                text: "Can I get a drink?",
+                playerText: "Can I get a drink?",
+                keywords: ["drink", "ale", "beer"],
+                nextNode: "offer_drink"
+              },
+              {
+                text: "Go back",
+                playerText: "Let me ask something else",
+                keywords: ["back", "return", "else"],
+                nextNode: "creature_info"
+              },
+              {
+                text: "End conversation",
+                playerText: "I should be going now",
+                keywords: ["end", "leave", "goodbye", "bye"],
+                nextNode: "end"
+              }
+            ]
+          },
+          creature_origin: {
+            npcText: "'They come from the deep forest, but they weren't always monsters. That big bear that was terrorizing us? It used to be just a normal bear until the wizard's corruption reached it.'",
+            choices: [
+              {
+                text: "Tell me about the wizard",
+                playerText: "Tell me more about this wizard",
+                keywords: ["wizard", "magic", "dark"],
+                nextNode: "wizard_info"
+              },
+              {
+                text: "Can I get a drink?",
+                playerText: "Can I get a drink?",
+                keywords: ["drink", "ale", "beer"],
+                nextNode: "offer_drink"
+              },
+              {
+                text: "Go back",
+                playerText: "Let me ask something else",
+                keywords: ["back", "return", "else"],
+                nextNode: "creature_info"
+              },
+              {
+                text: "End conversation",
+                playerText: "I should be going now",
+                keywords: ["end", "leave", "goodbye", "bye"],
+                nextNode: "end"
+              }
+            ]
+          },
+          end: {
+            npcText: "'Safe travels, friend. May the road be kind to you.'",
+            choices: []
           }
         }
       }

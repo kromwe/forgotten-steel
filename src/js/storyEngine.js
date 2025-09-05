@@ -1,5 +1,7 @@
 // Story engine for managing game narrative and locations
 
+import { imagePreloader } from './imageHelpers.js';
+
 export class StoryEngine {
   constructor(gameState, terminal, webglRenderer) {
     this.gameState = gameState;
@@ -12,8 +14,17 @@ export class StoryEngine {
     this.combatSystem = null;
     this.memorySystem = null;
     
+    // Image preloading system
+    this.preloadedImages = new Set();
+    this.preloadQueue = [];
+    
     // Ambient creature system
     this.ambientCreatures = this.initializeAmbientCreatures();
+    
+    // Conversation system
+    this.inConversation = false;
+    this.currentConversation = null;
+    this.originalHandlers = null;
     
     this.initializeCommandHandlers();
   }
@@ -96,9 +107,15 @@ export class StoryEngine {
       this.showInventory();
     });
     
-    // Talk to NPC
+    // Talk to NPC (with 'to' or 'with')
     this.terminal.registerCommand('^(talk|speak|chat) (to|with) (.+)$', (input) => {
       const npcName = input.match(/^(?:talk|speak|chat) (?:to|with) (.+)$/i)[1].toLowerCase();
+      this.talkToNPC(npcName);
+    });
+    
+    // Talk to NPC (without 'to' or 'with')
+    this.terminal.registerCommand('^(talk|speak|chat) (.+)$', (input) => {
+      const npcName = input.match(/^(?:talk|speak|chat) (.+)$/i)[1].toLowerCase();
       this.talkToNPC(npcName);
     });
     
@@ -154,9 +171,12 @@ export class StoryEngine {
     this.memorySystem = memorySystem;
   }
   
-  start() {
+  async start() {
     // Display the introduction
     this.showIntroduction();
+    
+    // Preload common images before starting
+    await imagePreloader.preloadCommonImages();
     
     // Describe the starting location
     this.describeCurrentLocation();
@@ -168,6 +188,75 @@ export class StoryEngine {
     this.terminal.print("\nType 'help' for a list of commands.", 'system-message');
   }
   
+  /**
+   * Set location image based on configuration and current game state
+   * @param {Object} location - Location data with images configuration
+   * @param {string} locationId - Location identifier
+   */
+  setLocationImage(location, locationId) {
+    const imageConfig = location.images;
+    let selectedImage = imageConfig.default;
+    
+    // Check conditions in order and use the first match
+    if (imageConfig.conditions) {
+      for (const [condition, imageUrl] of Object.entries(imageConfig.conditions)) {
+        if (this.webglRenderer.evaluateCondition) {
+          // Use WebGL renderer's condition evaluation
+          if (this.webglRenderer.evaluateCondition(condition, this.gameState)) {
+            selectedImage = imageUrl;
+            break;
+          }
+        } else {
+          // Fallback condition evaluation
+          if (this.evaluateImageCondition(condition, locationId)) {
+            selectedImage = imageUrl;
+            break;
+          }
+        }
+      }
+    }
+    
+    // Set the selected image
+    if (selectedImage.includes('.png') || selectedImage.includes('.jpg') || selectedImage.includes('.svg')) {
+      // It's a specific image file, use as dynamic image
+      this.webglRenderer.setScene(location.scene);
+      this.webglRenderer.setDynamicSceneImage(selectedImage);
+    } else {
+      // It's a scene name, use as base scene
+      this.webglRenderer.setScene(selectedImage);
+      this.webglRenderer.setDynamicSceneImage(null);
+    }
+  }
+  
+  /**
+   * Evaluate image condition for fallback when WebGL renderer doesn't have evaluateCondition
+   * @param {string} condition - Condition string
+   * @param {string} locationId - Current location ID
+   */
+  evaluateImageCondition(condition, locationId) {
+    if (condition.startsWith('flag:')) {
+      const flagName = condition.substring(5);
+      return this.gameState.getFlag(flagName);
+    } else if (condition.startsWith('!flag:')) {
+      const flagName = condition.substring(6);
+      return !this.gameState.getFlag(flagName);
+    } else if (condition.startsWith('npc:')) {
+      const npcId = condition.substring(4);
+      // Check if NPC is present in current location
+      const currentLocation = this.gameState.getCurrentLocationData();
+      return currentLocation && currentLocation.npcs && currentLocation.npcs.includes(npcId);
+    } else if (condition.startsWith('!npc:')) {
+      const npcId = condition.substring(5);
+      // Check if NPC is NOT present in current location
+      const currentLocation = this.gameState.getCurrentLocationData();
+      return !currentLocation || !currentLocation.npcs || !currentLocation.npcs.includes(npcId);
+    } else if (condition.startsWith('time:')) {
+      // For now, always return false for time conditions (can be enhanced later)
+      return false;
+    }
+    return false;
+  }
+
   describeCurrentLocation() {
     const locationId = this.gameState.currentLocation;
     const location = this.locations[locationId];
@@ -180,8 +269,14 @@ export class StoryEngine {
     // Update corpse decay states before describing location
     this.updateCorpseDecay(locationId);
     
-    // Update WebGL scene
-    this.webglRenderer.setScene(location.scene);
+    // Use new image configuration system if available
+    if (location.images) {
+      this.setLocationImage(location, locationId);
+    } else {
+      // Fallback to old system for locations without image config
+      this.webglRenderer.setScene(location.scene);
+      this.webglRenderer.setDynamicSceneImage(null);
+    }
     
     // Print location name and description
     this.terminal.print(`\n${location.name}`, 'location-name');
@@ -231,7 +326,7 @@ export class StoryEngine {
     }
   }
   
-  handleMovement(direction) {
+  async handleMovement(direction) {
     const locationId = this.gameState.currentLocation;
     const location = this.locations[locationId];
     
@@ -278,6 +373,12 @@ export class StoryEngine {
       targetLocationId = exit.locationId;
     } else {
       targetLocationId = exit;
+    }
+    
+    // Preload images for the target location
+    const targetLocation = this.locations[targetLocationId];
+    if (targetLocation) {
+      await imagePreloader.preloadLocationImages(targetLocation, this.gameState);
     }
     
     // Change location
@@ -589,6 +690,12 @@ export class StoryEngine {
             return;
           }
           
+          // Check if NPC has a conversation system
+          if (npc.conversation) {
+            this.startConversation(npc);
+            return;
+          }
+          
           // Check if NPC has a talk handler
           if (npc.onTalk) {
             npc.onTalk(this.gameState, this.terminal, this);
@@ -687,6 +794,9 @@ export class StoryEngine {
     // Clear the trigger flag
     this.gameState.setFlag('triggerWolfDeathStory', false);
     
+    // Switch to wolf attack image
+    this.webglRenderer.setDynamicSceneImage('assets/images/Wolf_Attacks.png');
+    
     // Display the dramatic death story
     this.terminal.print("\n", 'story-text');
     this.terminal.print("As you turn your back on the terrified children and attempt to flee...", 'story-text');
@@ -724,6 +834,133 @@ export class StoryEngine {
       // Use the story engine's own game over handling for wolf death story
       this.gameOverReturnToTitle();
     }, 12000);
+  }
+  
+  startConversation(npc) {
+    this.inConversation = true;
+    this.currentConversation = npc;
+    
+    // Store original command handlers
+    this.originalHandlers = { ...this.terminal.commandHandlers };
+    
+    // Clear existing handlers and set up conversation handlers
+    this.terminal.commandHandlers = {};
+    
+    // Start the conversation
+    this.processConversationNode(npc.conversation.start);
+  }
+  
+  processConversationNode(nodeId) {
+    const node = this.currentConversation.conversation.nodes[nodeId];
+    
+    if (!node) {
+      this.endConversation();
+      return;
+    }
+    
+    // Display NPC dialogue
+    if (node.npcText) {
+      // Check if npcText is a function and call it with gameState
+      const dialogueText = typeof node.npcText === 'function' 
+        ? node.npcText(this.gameState) 
+        : node.npcText;
+      this.terminal.print(dialogueText, 'npc-dialog');
+    }
+    
+    // Execute any node actions
+    if (node.onEnter) {
+      node.onEnter(this.gameState, this.terminal, this);
+    }
+    
+    // Handle player choices
+    if (node.choices && node.choices.length > 0) {
+      this.terminal.print("\nYou can say:", 'conversation-prompt');
+      
+      node.choices.forEach((choice, index) => {
+        // Check if choice is available
+        if (!choice.condition || choice.condition(this.gameState, this.terminal, this)) {
+          this.terminal.print(`${index + 1}. ${choice.text}`, 'conversation-choice');
+        }
+      });
+      
+      // Set up choice handlers
+      this.setupConversationChoiceHandlers(node);
+    } else {
+      // No choices, end conversation
+      this.endConversation();
+    }
+  }
+  
+  setupConversationChoiceHandlers(node) {
+    // Clear existing handlers
+    this.terminal.commandHandlers = {};
+    
+    // Set up number choice handlers
+    node.choices.forEach((choice, index) => {
+      if (!choice.condition || choice.condition(this.gameState, this.terminal, this)) {
+        this.terminal.registerCommand(`^${index + 1}$`, () => {
+          this.handleConversationChoice(choice);
+        });
+      }
+    });
+    
+    // Set up text-based choice handlers
+    node.choices.forEach((choice) => {
+      if (choice.keywords && (!choice.condition || choice.condition(this.gameState, this.terminal, this))) {
+        const keywordPattern = choice.keywords.map(k => k.toLowerCase()).join('|');
+        this.terminal.registerCommand(`^.*(${keywordPattern}).*$`, () => {
+          this.handleConversationChoice(choice);
+        });
+      }
+    });
+    
+    // Add exit conversation handler
+    this.terminal.registerCommand('^(exit|leave|goodbye|bye|quit|stop|end)$', () => {
+      this.endConversation();
+    });
+    
+    // Add help handler for conversations
+    this.terminal.registerCommand('^(help|\?)$', () => {
+      this.terminal.print("\nConversation Options:", 'conversation-prompt');
+      node.choices.forEach((choice, index) => {
+        if (!choice.condition || choice.condition(this.gameState, this.terminal, this)) {
+          this.terminal.print(`${index + 1}. ${choice.text}`, 'conversation-choice');
+        }
+      });
+      this.terminal.print("\nYou can also type 'exit', 'quit', or 'end' to leave the conversation.", 'conversation-prompt');
+    });
+  }
+  
+  handleConversationChoice(choice) {
+    // Display player's choice
+    if (choice.playerText) {
+      this.terminal.print(`You say: "${choice.playerText}"`, 'player-dialog');
+    }
+    
+    // Execute choice action
+    if (choice.onSelect) {
+      choice.onSelect(this.gameState, this.terminal, this);
+    }
+    
+    // Move to next node or end conversation
+    if (choice.nextNode) {
+      this.processConversationNode(choice.nextNode);
+    } else {
+      this.endConversation();
+    }
+  }
+  
+  endConversation() {
+    this.inConversation = false;
+    this.currentConversation = null;
+    
+    // Restore original command handlers
+    if (this.originalHandlers) {
+      this.terminal.commandHandlers = this.originalHandlers;
+      this.originalHandlers = null;
+    }
+    
+    this.terminal.print("\n[Conversation ended]\n", 'system-message');
   }
   
   gameOverReturnToTitle() {
@@ -1037,6 +1274,8 @@ export class StoryEngine {
       this.terminal.print(creatureDescription, 'ambient-creature');
     }
   }
+
+
 
   update() {
     // Update game logic here if needed

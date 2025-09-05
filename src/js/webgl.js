@@ -7,6 +7,7 @@ class WebGLRenderer {
     this.program = null;
     this.textures = {};
     this.currentScene = null;
+    this.dynamicImage = null;
     
     this.init();
   }
@@ -228,10 +229,40 @@ class WebGLRenderer {
           // Try next format
         }
       }
-      
+
       if (!texture) {
-        // Fallback to placeholder
-        texture = await this.loadTexture('assets/images/placeholder.svg');
+        // Fallback logic for different scene types
+        const forestScenes = ['forest_path', 'forest_path_north', 'forest_path_south', 'forest_path_east', 'forest_path_west', 'crossroads'];
+        const villageScenes = ['village_smithy', 'village_inn', 'village_elder_house', 'village_market'];
+        const caveScenes = ['cave_entrance', 'cave_interior', 'creature_den_entrance', 'creature_den_interior'];
+        const dungeonScenes = ['dungeon_entrance', 'dungeon_corridor', 'dungeon_chamber', 'underground_passage'];
+        const castleScenes = ['castle_entrance', 'castle_courtyard', 'castle_hall', 'throne_room'];
+        const hillScenes = ['hillside', 'mountain_path', 'rocky_outcrop', 'cliff_edge'];
+        
+        let fallbackImage;
+        if (sceneName === 'village_entrance') {
+          fallbackImage = 'Village_Entrance.png';
+        } else if (sceneName === 'village_square') {
+          fallbackImage = 'Cottage.png'; // Use Cottage.png for village square as it's more central/domestic
+        } else if (sceneName === 'village_outskirts') {
+          fallbackImage = 'Wolf_Children.png'; // Default image for village outskirts
+        } else if (forestScenes.includes(sceneName)) {
+          fallbackImage = 'Forest_Path.png';
+        } else if (villageScenes.includes(sceneName)) {
+          fallbackImage = 'Forest_Path.png'; // Use Forest_Path.png as default for village buildings
+        } else if (caveScenes.includes(sceneName)) {
+          fallbackImage = 'Cave_Entrance.png';
+        } else if (dungeonScenes.includes(sceneName)) {
+          fallbackImage = 'Dungeon_Entrance.png';
+        } else if (castleScenes.includes(sceneName)) {
+          fallbackImage = 'Castle_Entrance.png';
+        } else if (hillScenes.includes(sceneName)) {
+          fallbackImage = 'Hillside.png';
+        } else {
+          fallbackImage = 'Forest_Path.png';
+        }
+        
+        texture = await this.loadTexture(`assets/images/${fallbackImage}`);
       }
       
       this.textures[sceneName] = texture;
@@ -246,9 +277,12 @@ class WebGLRenderer {
   render(sceneName) {
     if (!this.gl) return;
     
+    console.log(`[WebGL] Rendering scene: ${sceneName}`);
+    
     // Try to load the scene if it's not already loaded
     if (this.currentScene !== sceneName) {
       if (!this.textures[sceneName]) {
+        console.log(`[WebGL] Loading scene texture for: ${sceneName}`);
         this.loadScene(sceneName).then(() => this.render(sceneName));
         return;
       }
@@ -333,14 +367,16 @@ class WebGLRenderer {
   // Set the current scene for rendering
   setScene(sceneData) {
     if (!sceneData) {
-      console.warn('No scene data provided to setScene');
+      console.warn('[WebGL] No scene data provided to setScene');
       return;
     }
     
     // Handle both string scene names and scene objects
     if (typeof sceneData === 'string') {
       // Scene data is just a scene name string
-      this.loadScene(sceneData);
+      this.currentScene = sceneData;
+        this.dynamicImage = null; // Clear any dynamic image when setting a new scene
+      this.render(sceneData);
     } else {
       // Scene data is an object with properties
       this.currentSceneData = sceneData;
@@ -348,10 +384,224 @@ class WebGLRenderer {
       // If scene has a background, load it as the current scene
       if (sceneData.background) {
         const sceneName = sceneData.id || sceneData.background.replace(/\.[^/.]+$/, ""); // Remove extension
-        this.loadScene(sceneName);
+        this.currentScene = sceneName;
+        this.dynamicImage = null;
+        this.render(sceneName);
       } else if (sceneData.id) {
-        this.loadScene(sceneData.id);
+        this.currentScene = sceneData.id;
+        this.dynamicImage = null;
+        this.render(sceneData.id);
       }
+    }
+  }
+  
+  /**
+   * Set a dynamic scene image that overlays or replaces the current scene
+   * @param {string|null|Object} imageConfig - Image URL, null to restore, or config object
+   * @param {Object} options - Additional options for image management
+   */
+  setDynamicSceneImage(imageConfig, options = {}) {
+    if (!this.gl) return;
+    
+    // Handle legacy string/null input
+    if (typeof imageConfig === 'string' || imageConfig === null) {
+      imageConfig = { url: imageConfig };
+    }
+    
+    const { url, priority = 'normal', persistent = false, transition = 'fade' } = imageConfig;
+    const { delay = 100, preload = false, usePreloader = true } = options;
+    
+    if (!url) {
+      // Restore original scene texture
+      this.clearDynamicImage();
+      return;
+    }
+    
+    // Check priority against current dynamic image
+    if (this.shouldSkipDueToLowerPriority({ priority })) {
+      console.log(`[WebGL] Skipping dynamic image due to lower priority: ${url}`);
+      return;
+    }
+    
+    // Store the current config for priority checking
+    this.currentDynamicConfig = { url, priority, persistent, transition };
+    
+    // Check if image is already cached in preloader
+    if (usePreloader && window.imagePreloader) {
+      const cachedImage = window.imagePreloader.getCachedImage(url);
+      if (cachedImage) {
+        this.applyDynamicImage(url, { ...imageConfig, cached: true });
+        return;
+      }
+    }
+    
+    // Check if image should be preloaded
+    if (preload) {
+      this.queueImageForPreload(url);
+    }
+    
+    // Load the new texture with configurable delay
+    setTimeout(() => {
+      this.loadTexture(url).then(texture => {
+        if (texture && this.currentScene && this.currentDynamicConfig && this.currentDynamicConfig.url === url) {
+          this.applyDynamicImage(url, { ...imageConfig, texture });
+        }
+      }).catch(error => {
+        console.error(`[WebGL] Failed to load dynamic image: ${url}`, error);
+        // Clear dynamic image state on error
+        if (this.currentDynamicConfig && this.currentDynamicConfig.url === url) {
+          this.clearDynamicImage();
+        }
+      });
+    }, delay);
+  }
+  
+  /**
+   * Check if a new dynamic image should be skipped due to lower priority
+   * @param {Object} newConfig - New image configuration
+   * @returns {boolean} True if should skip
+   */
+  shouldSkipDueToLowerPriority(newConfig) {
+    if (!this.dynamicImage) return false;
+    
+    const priorities = { low: 1, normal: 2, high: 3, critical: 4 };
+    const currentPriority = priorities[this.dynamicImage.priority] || 2;
+    const newPriority = priorities[newConfig.priority] || 2;
+    
+    return newPriority < currentPriority;
+  }
+  
+  /**
+   * Clear the current dynamic image and restore original scene
+   */
+  clearDynamicImage() {
+    this.currentDynamicConfig = null;
+    this.restoreOriginalScene();
+  }
+  
+  /**
+   * Force set a dynamic image regardless of priority
+   * @param {string|Object} imageConfig - Image configuration
+   * @param {Object} options - Additional options
+   */
+  forceDynamicSceneImage(imageConfig, options = {}) {
+    // Clear current dynamic state first
+    this.currentDynamicConfig = null;
+    this.dynamicImage = null;
+    
+    // Set the new image with critical priority
+    const config = typeof imageConfig === 'string' 
+      ? { url: imageConfig, priority: 'critical', ...options }
+      : { priority: 'critical', ...imageConfig, ...options };
+      
+    this.setDynamicSceneImage(config);
+  }
+  
+  /**
+   * Apply a dynamic image to the current scene
+   * @param {string} url - Image URL
+   * @param {Object} config - Image configuration
+   */
+  applyDynamicImage(url, config = {}) {
+    const { texture, priority = 'normal', persistent = false, transition = 'fade', cached = false } = config;
+    
+    if (!this.currentScene) return;
+    
+    // Store original texture if not already stored
+    if (!this.textures[this.currentScene + '_original']) {
+      this.textures[this.currentScene + '_original'] = this.textures[this.currentScene];
+    }
+    
+    // Store current dynamic image info
+    this.dynamicImage = {
+      url,
+      priority,
+      persistent,
+      transition,
+      cached,
+      timestamp: Date.now()
+    };
+    
+    // Replace current scene texture with dynamic image
+    if (texture) {
+      this.textures[this.currentScene] = texture;
+    }
+    
+    // Apply fade-in effect if not cached
+    if (transition === 'fade' && !cached) {
+      this.applyFadeInEffect();
+    }
+    
+    this.render(this.currentScene);
+  }
+  
+  /**
+   * Apply a fade-in effect for dynamic images
+   */
+  applyFadeInEffect() {
+    // Simple fade-in implementation using opacity changes
+    if (this.gl) {
+      // This could be enhanced with actual shader-based fading
+      // For now, just ensure smooth rendering
+      this.gl.enable(this.gl.BLEND);
+      this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+    }
+  }
+  
+  /**
+   * Restore the original scene texture
+   */
+  restoreOriginalScene() {
+    if (this.currentScene && this.textures[this.currentScene + '_original']) {
+      this.textures[this.currentScene] = this.textures[this.currentScene + '_original'];
+      delete this.textures[this.currentScene + '_original'];
+      this.render(this.currentScene);
+    } else if (this.currentScene) {
+      // Clear cache and reload original scene
+      delete this.textures[this.currentScene];
+      this.loadScene(this.currentScene).then(() => {
+        this.render(this.currentScene);
+      });
+    }
+    this.dynamicImage = null;
+    this.currentDynamicConfig = null;
+  }
+  
+  /**
+   * Queue an image for preloading
+   * @param {string} imageUrl - URL of the image to preload
+   */
+  queueImageForPreload(imageUrl) {
+    // Add to preload queue if not already cached
+    if (!this.textures[imageUrl.split('/').pop().split('.')[0]]) {
+      this.preloadImages([imageUrl]);
+    }
+  }
+  
+  /**
+   * Clear dynamic image if it matches certain criteria
+   * @param {Object} criteria - Criteria for clearing (priority, age, etc.)
+   */
+  clearDynamicImageIf(criteria = {}) {
+    if (!this.dynamicImage) return;
+    
+    const { maxAge, priority, persistent } = criteria;
+    
+    // Don't clear persistent images unless explicitly requested
+    if (this.dynamicImage.persistent && !criteria.forceClear) {
+      return;
+    }
+    
+    // Clear based on age
+    if (maxAge && (Date.now() - this.dynamicImage.timestamp) > maxAge) {
+      this.restoreOriginalScene();
+      return;
+    }
+    
+    // Clear based on priority
+    if (priority && this.dynamicImage.priority === priority) {
+      this.restoreOriginalScene();
+      return;
     }
   }
   
@@ -398,6 +648,118 @@ class WebGLRenderer {
     if (!blendEnabled) {
       this.gl.disable(this.gl.BLEND);
     }
+  }
+
+  // Helper methods for common image patterns
+  
+  /**
+   * Set scene image based on game state flags
+   * @param {string} sceneName - Base scene name
+   * @param {Object} gameState - Game state object with flags
+   * @param {Object} imageMap - Map of flag conditions to image URLs
+   */
+  setConditionalSceneImage(sceneName, gameState, imageMap) {
+    // Check conditions in priority order
+    for (const [condition, imageUrl] of Object.entries(imageMap)) {
+      if (this.evaluateCondition(condition, gameState)) {
+        this.setDynamicSceneImage(imageUrl);
+        return;
+      }
+    }
+    // If no conditions match, use base scene
+    this.setScene(sceneName);
+  }
+
+  /**
+   * Evaluate a condition string against game state
+   * @param {string} condition - Condition string (e.g., "flag:savedChildren", "!flag:wolfDefeated")
+   * @param {Object} gameState - Game state object
+   */
+  evaluateCondition(condition, gameState) {
+    if (condition.startsWith('!flag:')) {
+      const flagName = condition.substring(6);
+      return !gameState.getFlag(flagName);
+    } else if (condition.startsWith('flag:')) {
+      const flagName = condition.substring(5);
+      return gameState.getFlag(flagName);
+    } else if (condition.startsWith('npc:')) {
+      const npcId = condition.substring(4);
+      // Check if NPC is present in current location
+      const currentLocation = gameState.getCurrentLocationData();
+      return currentLocation && currentLocation.npcs && currentLocation.npcs.includes(npcId);
+    } else if (condition.startsWith('!npc:')) {
+      const npcId = condition.substring(5);
+      // Check if NPC is NOT present in current location
+      const currentLocation = gameState.getCurrentLocationData();
+      return !currentLocation || !currentLocation.npcs || !currentLocation.npcs.includes(npcId);
+    } else if (condition.startsWith('location:')) {
+      const locationName = condition.substring(9);
+      return gameState.currentLocation === locationName;
+    } else if (condition.startsWith('time:')) {
+      // For now, always return false for time conditions (can be enhanced later)
+      return false;
+    }
+    return false;
+  }
+
+  /**
+   * Set scene with time-based variants (day/night)
+   * @param {string} baseScene - Base scene name
+   * @param {string} timeOfDay - 'day' or 'night'
+   */
+  setTimeBasedScene(baseScene, timeOfDay = 'day') {
+    const timeVariant = `${baseScene}_${timeOfDay}`;
+    // Try time-specific variant first, fall back to base scene
+    this.loadScene(timeVariant).then(success => {
+      if (success) {
+        this.render(timeVariant);
+      } else {
+        this.setScene(baseScene);
+      }
+    });
+  }
+
+  /**
+   * Preload multiple images for smoother transitions
+   * @param {Array<string>} imageUrls - Array of image URLs to preload
+   */
+  async preloadImages(imageUrls) {
+    const preloadPromises = imageUrls.map(url => {
+      // Extract scene name from URL for caching
+      const sceneName = url.split('/').pop().split('.')[0];
+      return this.loadTexture(url).then(texture => {
+        if (texture) {
+          this.textures[sceneName] = texture;
+        }
+        return texture;
+      }).catch(error => {
+        console.warn(`Failed to preload image: ${url}`, error);
+        return null;
+      });
+    });
+    
+    const results = await Promise.all(preloadPromises);
+    return results.filter(texture => texture !== null);
+  }
+
+  /**
+   * Get appropriate scene image based on NPC presence and states
+   * @param {string} baseScene - Base scene name
+   * @param {Array} npcs - Array of NPCs in the location
+   * @param {Object} npcImageMap - Map of NPC conditions to images
+   */
+  setNPCBasedScene(baseScene, npcs, npcImageMap) {
+    for (const [npcCondition, imageUrl] of Object.entries(npcImageMap)) {
+      const [npcId, state] = npcCondition.split(':');
+      if (npcs.includes(npcId)) {
+        if (!state || state === 'present') {
+          this.setDynamicSceneImage(imageUrl);
+          return;
+        }
+      }
+    }
+    // No special NPCs, use base scene
+    this.setScene(baseScene);
   }
 }
 

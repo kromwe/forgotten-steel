@@ -102,7 +102,7 @@ export class SceneManager {
     return {
       id: `default_${locationName.toLowerCase().replace(/\s+/g, '_')}`,
       name: locationName,
-      background: 'placeholder.svg',
+      background: 'Forest_Path.png',
       objects: [],
       lighting: {
         ambient: [0.5, 0.5, 0.5],
