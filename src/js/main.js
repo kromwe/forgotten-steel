@@ -99,7 +99,6 @@ class Game {
   setupEventListeners() {
     if (this.newGameBtn) {
       this.newGameBtn.addEventListener('click', () => {
-        this.stopTitleMusic(); // Stop music when starting new game
         this.showCharacterCreation();
       });
     }
@@ -149,7 +148,6 @@ class Game {
   }
   
   showCharacterCreation() {
-    this.stopTitleMusic(); // Stop music when entering character creation
     this.showScreen('character-creation-screen');
   }
   
