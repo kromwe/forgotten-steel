@@ -255,12 +255,21 @@ export class StoryEngine {
     
     // Handle conditional exits
     if (typeof exit === 'object' && exit.condition) {
-      if (!exit.condition(this.gameState, this)) {
+      console.log('Checking exit condition for direction:', normalizedDirection);
+      const conditionResult = exit.condition(this.gameState, this);
+      console.log('Exit condition result:', conditionResult);
+      
+      if (!conditionResult) {
         // Check if wolf death story should be triggered
-        if (this.gameState.getFlag('triggerWolfDeathStory')) {
+        const triggerFlag = this.gameState.getFlag('triggerWolfDeathStory');
+        console.log('triggerWolfDeathStory flag:', triggerFlag);
+        
+        if (triggerFlag) {
+          console.log('Triggering wolf death story');
           this.triggerWolfDeathStory();
           return;
         }
+        console.log('Movement blocked, showing blocked message');
         this.terminal.print(exit.blockedMessage || `You cannot go ${normalizedDirection} from here.`, 'error-message');
         return;
       }
