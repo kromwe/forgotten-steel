@@ -8,6 +8,7 @@ import { Terminal } from './terminal.js';
 import { MemorySystem } from './memorySystem.js';
 import { initializeMemorySystem } from './memoryData.js';
 import { GameState } from './gameState.js';
+import { AudioManager } from './audioManager.js';
 
 class Game {
   constructor() {
@@ -39,6 +40,8 @@ class Game {
     this.storyEngine = null;
     this.combatSystem = null;
     this.memorySystem = null;
+    this.audioManager = new AudioManager();
+    this.titleMusicPlaying = false;
     this.gameState = new GameState();
     this.gameState.playerName = '';
     this.gameState.currentLocation = 'crossroads';
@@ -94,10 +97,16 @@ class Game {
   
   setupEventListeners() {
     if (this.newGameBtn) {
-      this.newGameBtn.addEventListener('click', () => this.showCharacterCreation());
+      this.newGameBtn.addEventListener('click', () => {
+        this.startTitleMusic(); // Ensure music starts on user interaction
+        this.showCharacterCreation();
+      });
     }
     if (this.loadGameBtn) {
-      this.loadGameBtn.addEventListener('click', () => this.loadGame());
+      this.loadGameBtn.addEventListener('click', () => {
+        this.startTitleMusic(); // Ensure music starts on user interaction
+        this.loadGame();
+      });
     }
     if (this.startAdventureBtn) {
       this.startAdventureBtn.addEventListener('click', () => this.startNewGame());
@@ -120,6 +129,13 @@ class Game {
     const screens = document.querySelectorAll('.screen');
     screens.forEach(screen => screen.classList.remove('active'));
     
+    // Handle music based on screen
+    if (screenId === 'title-screen') {
+      this.startTitleMusic();
+    } else {
+      this.stopTitleMusic();
+    }
+    
     // Show requested screen
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
@@ -129,6 +145,40 @@ class Game {
   
   showCharacterCreation() {
     this.showScreen('character-creation-screen');
+  }
+  
+  async startTitleMusic() {
+    try {
+      if (!this.audioManager) {
+        this.audioManager = new AudioManager();
+      }
+      
+      // Initialize audio system (requires user interaction)
+      this.audioManager.init();
+      
+      // Check if music is already playing
+      if (this.titleMusicPlaying) {
+        return;
+      }
+      
+      // Load and play title music
+      const musicPath = 'assets/audio/title_theme.m4a';
+      
+      await this.audioManager.loadMusic('title', musicPath);
+      this.audioManager.playMusic('title', { loop: true, volume: 0.3 });
+      
+      this.titleMusicPlaying = true;
+      console.log('Title music started successfully');
+    } catch (error) {
+      console.info('Title music unavailable:', error.message);
+    }
+  }
+  
+  stopTitleMusic() {
+    if (this.audioManager && this.audioManager.currentMusic) {
+      this.audioManager.stopMusic();
+      this.titleMusicPlaying = false;
+    }
   }
   
   loadGame() {
@@ -263,7 +313,7 @@ class Game {
     
     
     // Initialize Memory System
-    this.memorySystem = new MemorySystem(this.gameState, this.terminal, this.webglRenderer, null);
+    this.memorySystem = new MemorySystem(this.gameState, this.terminal, this.webglRenderer, this.audioManager);
     initializeMemorySystem(this.memorySystem);
     
     // Initialize Story Engine

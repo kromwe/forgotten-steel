@@ -54,6 +54,10 @@ module.exports = (env, argv) => {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: 'asset/resource',
       },
+      {
+        test: /\.(mp3|wav|ogg|m4a)$/i,
+        type: 'asset/resource',
+      },
     ],
   },
   plugins: [
