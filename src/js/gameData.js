@@ -82,8 +82,8 @@ export const gameData = {
       images: {
         default: "/assets/images/Village_Entrance.png",
         conditions: {
-          "flag:savedChildren": "/assets/images/Forest_Path.png",
-          "npc:small_creature": "/assets/images/Wolf_Children.png"
+          "npc:small_creature": "/assets/images/Wolf_Children.png",
+          "flag:savedChildren": "/assets/images/Forest_Path.png"
         }
       },
       description: "The forest thins as the path approaches what appears to be a small village. Nearby, you hear children screaming in terror.",
@@ -312,6 +312,9 @@ export const gameData = {
     forest_path_north: {
       name: "Forest Path - North",
       scene: "forest_path",
+      images: {
+        default: "/assets/images/Forest_Path.png"
+      },
       description: "The forest path continues northward. The trees are thinner here, allowing more sunlight to filter through.",
       exits: {
         south: "crossroads",
@@ -342,7 +345,7 @@ export const gameData = {
       scene: "cave_entrance",
       // Image configuration for before/after states
       images: {
-        default: "/assets/images/placeholder.svg"
+        default: "/assets/images/Forest_Path.png"
       },
       description: "A dark cave mouth opens in the side of a small hill. Strange scratches mark the rocks around the entrance, and an unnatural silence hangs in the air.",
       exits: {
@@ -640,6 +643,7 @@ export const gameData = {
       type: "quest",
       takeable: true,
       usable: true,
+      hidden: true,
       onUse: (gameState, terminal) => {
         terminal.print("You study the map. It shows a path leading north from the crossroads to a small cave in the hills. The cave is marked as 'Creature's Den'.", 'item-use');
         return true;
@@ -761,6 +765,14 @@ export const gameData = {
       keywords: ["claws", "talons", "bear"],
       type: "material",
       takeable: true
+    },
+    
+    gold_coins: {
+      name: "Gold Coins",
+      description: "A small pouch containing several gold coins. They appear to be of royal mint, suggesting they once belonged to someone of importance.",
+      keywords: ["coins", "gold", "pouch", "money"],
+      type: "treasure",
+      takeable: true
     }
   },
   
@@ -844,6 +856,9 @@ export const gameData = {
         
         terminal.print("'Thank you!' the boy cries, helping the girl to her feet. 'We need to get back to the village. You should come too—our elder will want to thank you.'", 'npc-dialog');
         terminal.print("The children run toward the village to the west.", 'story-event');
+        
+        // Force refresh the location image after NPC changes
+        storyEngine.setLocationImage(location, 'village_outskirts');
       }
     },
     
@@ -1144,7 +1159,7 @@ export const gameData = {
         terminal.print("The twisted bear collapses with a final roar. As it dies, you notice its form seems to partially revert to that of a normal bear, though the corruption is too deep to fully disappear.", 'combat-aftermath');
         gameState.setFlag('defeatedVillageMonster', true);
         
-        terminal.print("At the back of the cave, you find what appears to be the creature's hoard—items taken from its victims.", 'story-event');
+        terminal.print("At the back of the cave, you find the creature's hoard scattered among the bones. Among the debris, you discover some valuable items!", 'story-event');
         
         // Remove the creature from the location's NPCs
         const location = storyEngine.locations['creature_den_interior'];
@@ -1153,8 +1168,23 @@ export const gameData = {
           location.npcs.splice(index, 1);
         }
         
+        // Automatically add hoard items to the location
+        if (!gameState.getFlag('searchedHoard')) {
+          terminal.print("You find a small pouch of gold coins among the creature's belongings!", 'reward');
+          
+          // Add gold coins item to the location
+          if (!location.items) {
+            location.items = [];
+          }
+          if (!location.items.includes('gold_coins')) {
+            location.items.push('gold_coins');
+          }
+          
+          gameState.setFlag('searchedHoard', true);
+        }
+        
         // Update the location description
-        location.description = "The inside of the cave is damp and dark. Bones litter the floor, and a foul smell permeates the air. The twisted bear lies dead at the back of the cave.";
+        location.description = "The inside of the cave is damp and dark. Bones litter the floor, and a foul smell permeates the air. The twisted bear lies dead at the back of the cave. Scattered items from the creature's hoard lie among the bones.";
       }
     }
   }

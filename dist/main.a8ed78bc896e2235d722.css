@@ -99,6 +99,21 @@ button {
   font-family: 'Courier New', monospace;
 }
 
+.music-btn {
+  background-color: #1a1a2e;
+  border-color: #16213e;
+  color: #eee;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.5rem;
+  margin-top: 1rem;
+}
+
+.music-btn:hover {
+  background-color: #16213e;
+  border-color: #0f3460;
+  transform: translateY(-2px);
+}
+
 button:hover {
   background-color: #f8d000;
   color: #000;
@@ -203,7 +218,7 @@ input[type="text"]:focus {
 
 /* WebGL Scene Container */
 #webgl-container {
-  height: 60%;
+  height: 50%;
   width: 100%;
   background-color: #111;
   position: relative;
@@ -221,7 +236,7 @@ input[type="text"]:focus {
 
 /* Terminal Container */
 #terminal-container {
-  height: 60%;
+  height: 50%;
   width: 100%;
   background-color: #000;
   border-top: 2px solid #f8d000;
@@ -241,6 +256,7 @@ input[type="text"]:focus {
 
 #terminal-input-container {
   display: flex;
+  align-items: center;
   padding: 0.5rem 0;
   border-top: 1px solid #333;
 }
@@ -248,6 +264,7 @@ input[type="text"]:focus {
 .prompt {
   color: #0f0;
   font-size: 1rem;
+  line-height: 1.4;
   margin-right: 0.5rem;
 }
 
@@ -257,6 +274,8 @@ input[type="text"]:focus {
   border: none;
   color: #0f0;
   font-size: 1rem;
+  line-height: 1.4;
+  padding: 0;
 }
 
 #terminal-input:focus {
@@ -278,6 +297,119 @@ input[type="text"]:focus {
 
 .error-message {
   color: #f00;
+}
+
+.ambient-creature {
+  color: #ff8c00;
+  font-style: italic;
+  text-shadow: 0 0 5px #ff8c00;
+}
+
+/* Loot Menu Styles */
+.loot-menu-header {
+  color: #f8d000;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.loot-option {
+  color: #0ff;
+  margin-left: 1rem;
+  cursor: pointer;
+}
+
+.loot-prompt {
+  color: #0f0;
+  font-weight: bold;
+}
+
+.action-result {
+  color: #0f0;
+}
+
+.item-found {
+  color: #ffa500;
+  margin-left: 1rem;
+}
+
+.action-hint {
+  color: #888;
+  font-style: italic;
+}
+
+.help-header {
+  color: #f8d000;
+  font-weight: bold;
+}
+
+.help-command {
+  color: #0ff;
+  margin-left: 1rem;
+}
+
+.help-tip {
+  color: #888;
+  font-style: italic;
+}
+
+/* Combat Text Styling */
+.combat-damage {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.combat-health {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.enemy-health {
+  color: #ffdd44;
+  font-weight: bold;
+}
+
+/* Conversation System Styles */
+.npc-dialog {
+  color: #88ccff;
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.player-dialog {
+  color: #ffaa88;
+  margin: 5px 0;
+}
+
+.conversation-prompt {
+  color: #cccccc;
+  margin: 10px 0 5px 0;
+}
+
+.conversation-choice {
+  color: #aaffaa;
+  margin: 2px 0;
+  padding-left: 10px;
+}
+
+.conversation-choice:hover {
+  color: #ffffff;
+  background-color: rgba(170, 255, 170, 0.1);
+}
+
+.player-attack {
+  color: #ff6666;
+}
+
+.enemy-attack {
+  color: #ff4444;
+}
+
+.player-stats {
+  color: #ffdd44;
+}
+
+.enemy-stats {
+  color: #ffaa44;
 }
 
 /* Mobile-Friendly Styles */
