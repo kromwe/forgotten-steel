@@ -79,30 +79,19 @@ export const gameData = {
         east: {
           locationId: "forest_path_west",
           condition: (gameState, storyEngine) => {
-            // Debug logging
-            console.log('East exit condition check:');
-            console.log('savedChildren flag:', gameState.getFlag('savedChildren'));
-            
-            // If children have been saved, player can always leave
-            if (gameState.getFlag('savedChildren')) {
-              console.log('Children saved, allowing movement');
-              return true;
-            }
-            
-            // If children haven't been saved, check if wolf is still alive
+            console.log('East exit condition - savedChildren:', gameState.getFlag('savedChildren'));
             const location = storyEngine.locations['village_outskirts'];
-            console.log('Location NPCs:', location ? location.npcs : 'no location');
-            console.log('Wolf present:', location && location.npcs && location.npcs.includes('small_creature'));
+            console.log('East exit condition - NPCs in village_outskirts:', location.npcs);
+            const hasWolf = location.npcs.includes('small_creature');
+            console.log('East exit condition - hasWolf:', hasWolf);
             
-            if (location && location.npcs && location.npcs.includes('small_creature')) {
-              // Wolf is alive, trigger story and block movement
-              console.log('Wolf alive, setting triggerWolfDeathStory flag and blocking movement');
+            // If children haven't been saved and wolf is still present, trigger wolf encounter
+            if (!gameState.getFlag('savedChildren') && hasWolf) {
+              console.log('East exit condition - Setting triggerWolfDeathStory to true');
               gameState.setFlag('triggerWolfDeathStory', true);
               return false;
             }
-            
-            // Wolf is dead but children flag not set - this shouldn't happen, but allow movement
-            console.log('Wolf dead but children not saved, allowing movement');
+            console.log('East exit condition - Allowing movement');
             return true;
           },
           blockedMessage: ""
@@ -110,30 +99,19 @@ export const gameData = {
         west: {
           locationId: "village_entrance",
           condition: (gameState, storyEngine) => {
-            // Debug logging
-            console.log('West exit condition check:');
-            console.log('savedChildren flag:', gameState.getFlag('savedChildren'));
-            
-            // If children have been saved, player can always leave
-            if (gameState.getFlag('savedChildren')) {
-              console.log('Children saved, allowing movement');
-              return true;
-            }
-            
-            // If children haven't been saved, check if wolf is still alive
+            console.log('West exit condition - savedChildren:', gameState.getFlag('savedChildren'));
             const location = storyEngine.locations['village_outskirts'];
-            console.log('Location NPCs:', location ? location.npcs : 'no location');
-            console.log('Wolf present:', location && location.npcs && location.npcs.includes('small_creature'));
+            console.log('West exit condition - NPCs in village_outskirts:', location.npcs);
+            const hasWolf = location.npcs.includes('small_creature');
+            console.log('West exit condition - hasWolf:', hasWolf);
             
-            if (location && location.npcs && location.npcs.includes('small_creature')) {
-              // Wolf is alive, trigger story and block movement
-              console.log('Wolf alive, setting triggerWolfDeathStory flag and blocking movement');
+            // If children haven't been saved and wolf is still present, trigger wolf encounter
+            if (!gameState.getFlag('savedChildren') && hasWolf) {
+              console.log('West exit condition - Setting triggerWolfDeathStory to true');
               gameState.setFlag('triggerWolfDeathStory', true);
               return false;
             }
-            
-            // Wolf is dead but children flag not set - this shouldn't happen, but allow movement
-            console.log('Wolf dead but children not saved, allowing movement');
+            console.log('West exit condition - Allowing movement');
             return true;
           },
           blockedMessage: ""
