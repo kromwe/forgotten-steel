@@ -99,13 +99,13 @@ class Game {
   setupEventListeners() {
     if (this.newGameBtn) {
       this.newGameBtn.addEventListener('click', () => {
-        this.startTitleMusic(); // Ensure music starts on user interaction
+        this.stopTitleMusic(); // Stop music when starting new game
         this.showCharacterCreation();
       });
     }
     if (this.loadGameBtn) {
       this.loadGameBtn.addEventListener('click', () => {
-        this.startTitleMusic(); // Ensure music starts on user interaction
+        this.stopTitleMusic(); // Stop music when loading game
         this.loadGame();
       });
     }
@@ -149,6 +149,7 @@ class Game {
   }
   
   showCharacterCreation() {
+    this.stopTitleMusic(); // Stop music when entering character creation
     this.showScreen('character-creation-screen');
   }
   
@@ -195,12 +196,12 @@ class Game {
     if (this.titleMusicPlaying) {
       this.stopTitleMusic();
       if (this.musicToggleBtn) {
-        this.musicToggleBtn.textContent = '🔇 Music Off';
+        this.musicToggleBtn.textContent = '🎵 Enable Music';
       }
     } else {
       this.startTitleMusic();
       if (this.musicToggleBtn) {
-        this.musicToggleBtn.textContent = '🎵 Music On';
+        this.musicToggleBtn.textContent = '🔇 Disable Music';
       }
     }
   }
@@ -238,6 +239,9 @@ class Game {
         discoveredItems: []
       };
       this.terminalHistory = saveData.terminalHistory || [];
+      
+      // Stop title music when loading into game
+      this.stopTitleMusic();
       
       // Transition to game screen
       this.showScreen('game-screen');
@@ -381,6 +385,9 @@ class Game {
     
     // Store the character name for use in the game
     this.playerName = characterName;
+    
+    // Stop title music when starting the actual game
+    this.stopTitleMusic();
     
     // Clean up existing game systems before starting new game
     this.cleanupGameSystems();
