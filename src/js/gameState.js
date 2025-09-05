@@ -36,6 +36,9 @@ export class GameState {
       rememberedQueen: false,
       foundTower: false
     };
+    
+    // Story trigger flags
+    this.triggerWolfDeathStory = false;
   }
   
   newGame(playerName) {
@@ -86,6 +89,9 @@ export class GameState {
       rememberedQueen: false,
       foundTower: false
     };
+    
+    // Always reset story trigger flags when loading
+    this.triggerWolfDeathStory = false;
     
     return true;
   }
