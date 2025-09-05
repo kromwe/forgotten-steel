@@ -849,6 +849,11 @@ export class CombatSystem {
     // Clear terminal
     this.terminal.clear();
     
+    // Reset the game state to ensure clean restart
+    if (this.gameState) {
+      this.gameState.reset();
+    }
+    
     // Show title screen
     const screens = document.querySelectorAll('.screen');
     screens.forEach(screen => screen.classList.remove('active'));
