@@ -14,6 +14,7 @@ export class GameState {
     // Game progress
     this.currentLocation = 'crossroads';
     this.visitedLocations = new Set(['crossroads']);
+    this.locationVisitCounts = { 'crossroads': 1 }; // Track visit counts for corpse decay
     this.completedObjectives = new Set();
     this.knownInformation = new Set();
     this.memoryRecovered = 0; // 0-100%
@@ -54,6 +55,7 @@ export class GameState {
       playerMaxHealth: this.playerMaxHealth,
       currentLocation: this.currentLocation,
       visitedLocations: Array.from(this.visitedLocations),
+      locationVisitCounts: this.locationVisitCounts,
       completedObjectives: Array.from(this.completedObjectives),
       knownInformation: Array.from(this.knownInformation),
       memoryRecovered: this.memoryRecovered,
@@ -73,6 +75,7 @@ export class GameState {
     this.playerMaxHealth = saveData.playerMaxHealth || 100;
     this.currentLocation = saveData.currentLocation || 'crossroads';
     this.visitedLocations = new Set(saveData.visitedLocations || ['crossroads']);
+    this.locationVisitCounts = saveData.locationVisitCounts || { 'crossroads': 1 };
     this.completedObjectives = new Set(saveData.completedObjectives || []);
     this.knownInformation = new Set(saveData.knownInformation || []);
     this.memoryRecovered = saveData.memoryRecovered || 0;
@@ -99,8 +102,19 @@ export class GameState {
   changeLocation(newLocation) {
     this.currentLocation = newLocation;
     this.visitedLocations.add(newLocation);
+    
+    // Increment visit count for corpse decay tracking
+    if (!this.locationVisitCounts[newLocation]) {
+      this.locationVisitCounts[newLocation] = 0;
+    }
+    this.locationVisitCounts[newLocation]++;
+    
     this.saveGame();
     return true;
+  }
+  
+  getLocationVisitCount(location) {
+    return this.locationVisitCounts[location] || 0;
   }
   
   addToInventory(item) {

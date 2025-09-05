@@ -758,7 +758,7 @@ export class CombatSystem {
       ];
     }
     
-    // Create corpse NPC
+    // Create corpse NPC with decay tracking
     const corpse = {
       name: `${this.currentEnemy.name} Corpse`,
       description: `The lifeless body of the ${this.currentEnemy.name.toLowerCase()}. You might be able to find something useful on it.`,
@@ -771,6 +771,10 @@ export class CombatSystem {
       searched: false,
       originalEnemy: this.currentEnemy.name,
       loot: lootItems,
+      // Decay tracking
+      createdAtLocation: this.gameState.currentLocation,
+      createdAtVisitCount: this.gameState.getLocationVisitCount(this.gameState.currentLocation),
+      decayState: 'fresh', // fresh, rotting, decayed
       onExamine: (gameState, terminal, storyEngine) => {
         terminal.print(`The ${this.currentEnemy.name.toLowerCase()} lies motionless. Its body shows the wounds from your battle.`, 'examine-result');
         

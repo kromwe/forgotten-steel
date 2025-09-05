@@ -286,6 +286,53 @@ input[type="text"]:focus {
   text-shadow: 0 0 5px #ff8c00;
 }
 
+/* Loot Menu Styles */
+.loot-menu-header {
+  color: #f8d000;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.loot-option {
+  color: #0ff;
+  margin-left: 1rem;
+  cursor: pointer;
+}
+
+.loot-prompt {
+  color: #0f0;
+  font-weight: bold;
+}
+
+.action-result {
+  color: #0f0;
+}
+
+.item-found {
+  color: #ffa500;
+  margin-left: 1rem;
+}
+
+.action-hint {
+  color: #888;
+  font-style: italic;
+}
+
+.help-header {
+  color: #f8d000;
+  font-weight: bold;
+}
+
+.help-command {
+  color: #0ff;
+  margin-left: 1rem;
+}
+
+.help-tip {
+  color: #888;
+  font-style: italic;
+}
+
 /* Mobile-Friendly Styles */
 @media screen and (max-width: 768px) {
   /* Larger touch-friendly buttons */

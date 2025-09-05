@@ -177,6 +177,9 @@ export class StoryEngine {
       return;
     }
     
+    // Update corpse decay states before describing location
+    this.updateCorpseDecay(locationId);
+    
     // Update WebGL scene
     this.webglRenderer.setScene(location.scene);
     
@@ -649,40 +652,14 @@ export class StoryEngine {
         if (npc.keywords.some(keyword => targetName.includes(keyword))) {
           // Check if it's a corpse that can be searched
           if (npc.isCorpse) {
-            // Check if already searched
-            if (npc.searched) {
-              this.terminal.print(`You have already searched the ${npc.name}.`, 'action-result');
+            // Check if corpse has any loot remaining
+            if (!npc.loot || npc.loot.length === 0) {
+              this.terminal.print(`You have already looted everything from the ${npc.name}.`, 'action-result');
               return;
             }
             
-            // Mark as searched
-            npc.searched = true;
-            
-            // Check for loot
-            if (npc.loot && npc.loot.length > 0) {
-              this.terminal.print(`You search the ${npc.name} and find:`, 'action-result');
-              
-              // Add loot items to the current location so they can be taken individually
-              if (!location.items) {
-                location.items = [];
-              }
-              
-              for (const lootItem of npc.loot) {
-                const item = this.items[lootItem.id];
-                if (item) {
-                  // Add item to location items if not already there
-                  if (!location.items.includes(lootItem.id)) {
-                    location.items.push(lootItem.id);
-                  }
-                  this.terminal.print(`- ${item.name}`, 'item-found');
-                }
-              }
-              
-              this.terminal.print(`You can 'take' or 'get' each item individually.`, 'action-hint');
-            } else {
-              this.terminal.print(`You search the ${npc.name} but find nothing of value.`, 'action-result');
-            }
-            
+            // Show loot menu
+            this.showLootMenu(npc);
             return;
           } else {
             this.terminal.print(`You can't search ${npc.name}.`, 'error-message');
@@ -786,6 +763,215 @@ export class StoryEngine {
     if (titleScreen) {
       titleScreen.classList.add('active');
     }
+  }
+
+  showLootMenu(corpse) {
+    this.terminal.print(`\nWhat do you want to loot from the ${corpse.name}?`, 'loot-menu-header');
+    
+    // Store current corpse for loot selection
+    this.currentLootCorpse = corpse;
+    
+    // Display numbered loot options
+    for (let i = 0; i < corpse.loot.length; i++) {
+      const lootItem = corpse.loot[i];
+      const item = this.items[lootItem.id];
+      if (item) {
+        this.terminal.print(`${i + 1}. ${item.name}`, 'loot-option');
+      }
+    }
+    
+    // Add "Take All" option
+    this.terminal.print(`${corpse.loot.length + 1}. Take All`, 'loot-option');
+    
+    this.terminal.print(`\nEnter the number of your choice:`, 'loot-prompt');
+    
+    // Set up temporary command handlers for loot selection
+    this.setupLootSelectionHandlers();
+  }
+  
+  setupLootSelectionHandlers() {
+    // Store original handlers
+    this.originalHandlers = { ...this.terminal.commandHandlers };
+    
+    // Clear existing handlers
+    this.terminal.commandHandlers = {};
+    
+    // Add number selection handler
+    this.terminal.registerCommand('^([0-9]+)$', (input) => {
+      const choice = parseInt(input.trim());
+      this.handleLootSelection(choice);
+    });
+    
+    // Add cancel option
+    this.terminal.registerCommand('^(cancel|exit|quit)$', () => {
+      this.cancelLootSelection();
+    });
+  }
+  
+  handleLootSelection(choice) {
+    if (!this.currentLootCorpse || !this.currentLootCorpse.loot) {
+      this.restoreOriginalHandlers();
+      return;
+    }
+    
+    const corpse = this.currentLootCorpse;
+    const maxChoice = corpse.loot.length + 1; // +1 for "Take All"
+    
+    if (choice < 1 || choice > maxChoice) {
+      this.terminal.print(`Invalid choice. Please enter a number between 1 and ${maxChoice}.`, 'error-message');
+      return;
+    }
+    
+    if (choice === maxChoice) {
+      // Take All option
+      this.takeAllLoot(corpse);
+    } else {
+      // Take specific item
+      this.takeLootItem(corpse, choice - 1);
+    }
+    
+    // Check if there's still loot remaining
+    if (corpse.loot.length > 0) {
+      this.terminal.print(`\nThere are still items remaining. Search the corpse again to continue looting.`, 'action-hint');
+    }
+    
+    this.restoreOriginalHandlers();
+  }
+  
+  takeAllLoot(corpse) {
+    this.terminal.print(`You take everything from the ${corpse.name}:`, 'action-result');
+    
+    // Take all items
+    while (corpse.loot.length > 0) {
+      const lootItem = corpse.loot[0];
+      const item = this.items[lootItem.id];
+      if (item) {
+        this.gameState.addToInventory({
+          id: lootItem.id,
+          ...item
+        });
+        this.terminal.print(`- ${item.name}`, 'item-found');
+      }
+      corpse.loot.shift(); // Remove the item from loot
+    }
+  }
+  
+  takeLootItem(corpse, index) {
+    if (index >= 0 && index < corpse.loot.length) {
+      const lootItem = corpse.loot[index];
+      const item = this.items[lootItem.id];
+      
+      if (item) {
+        this.gameState.addToInventory({
+          id: lootItem.id,
+          ...item
+        });
+        this.terminal.print(`You take the ${item.name}.`, 'action-result');
+        
+        // Remove the item from loot
+        corpse.loot.splice(index, 1);
+      }
+    }
+  }
+  
+  cancelLootSelection() {
+    this.terminal.print('You decide not to loot anything right now.', 'action-result');
+    this.restoreOriginalHandlers();
+  }
+  
+  restoreOriginalHandlers() {
+    // Restore original command handlers
+    if (this.originalHandlers) {
+      this.terminal.commandHandlers = this.originalHandlers;
+      this.originalHandlers = null;
+    }
+    this.currentLootCorpse = null;
+  }
+  
+  updateCorpseDecay(locationId) {
+    const location = this.locations[locationId];
+    if (!location || !location.npcs) return;
+    
+    const currentVisitCount = this.gameState.getLocationVisitCount(locationId);
+    const corpsesToRemove = [];
+    
+    // Check each NPC in the location
+    for (let i = location.npcs.length - 1; i >= 0; i--) {
+      const npcId = location.npcs[i];
+      const npc = this.npcs[npcId];
+      
+      if (npc && npc.isCorpse && npc.createdAtLocation === locationId) {
+        const visitsSinceCreation = currentVisitCount - npc.createdAtVisitCount;
+        
+        if (visitsSinceCreation >= 3) {
+          // Remove corpse completely after 3 visits
+          corpsesToRemove.push({ index: i, npcId, npc });
+        } else if (visitsSinceCreation >= 2) {
+          // Severely decayed state
+          this.updateCorpseToDecayState(npc, 'decayed');
+        } else if (visitsSinceCreation >= 1) {
+          // Rotting state
+          this.updateCorpseToDecayState(npc, 'rotting');
+        }
+        // visitsSinceCreation === 0 means fresh (no change needed)
+      }
+    }
+    
+    // Remove completely decayed corpses
+    for (const corpseInfo of corpsesToRemove) {
+      location.npcs.splice(corpseInfo.index, 1);
+      delete this.npcs[corpseInfo.npcId];
+      // Loot is automatically lost when corpse is removed
+    }
+  }
+  
+  updateCorpseToDecayState(corpse, newState) {
+    if (corpse.decayState === newState) return; // Already in this state
+    
+    corpse.decayState = newState;
+    const enemyName = corpse.originalEnemy.toLowerCase();
+    
+    switch (newState) {
+      case 'rotting':
+        corpse.name = `Rotting ${corpse.originalEnemy} Corpse`;
+        corpse.description = `The decomposing remains of the ${enemyName}. The smell is becoming quite unpleasant, and flies buzz around the body.`;
+        corpse.presenceDescription = `The rotting corpse of the ${enemyName} lies here, emanating a foul odor.`;
+        break;
+        
+      case 'decayed':
+        corpse.name = `Severely Decayed ${corpse.originalEnemy} Remains`;
+        corpse.description = `What's left of the ${enemyName} is barely recognizable. The advanced state of decay makes it difficult to look at for long.`;
+        corpse.presenceDescription = `The severely decayed remains of the ${enemyName} are scattered here, reeking terribly.`;
+        break;
+    }
+    
+    // Update the onExamine function to reflect decay state
+    corpse.onExamine = (gameState, terminal, storyEngine) => {
+      let examineText;
+      switch (newState) {
+        case 'rotting':
+          examineText = `The ${enemyName} corpse is in an advanced state of decomposition. The smell is overwhelming.`;
+          break;
+        case 'decayed':
+          examineText = `The ${enemyName} remains are barely identifiable. Nature is quickly reclaiming what's left.`;
+          break;
+        default:
+          examineText = `The ${enemyName} lies motionless. Its body shows the wounds from your battle.`;
+      }
+      
+      terminal.print(examineText, 'examine-result');
+      
+      // Check if there are loot items to find
+      if (corpse.loot && corpse.loot.length > 0) {
+        if (newState === 'decayed') {
+          terminal.print("You might still find something in the remains, though it's quite unpleasant to search.", 'examine-result');
+        } else {
+          terminal.print("You might find something useful if you search the corpse.", 'examine-result');
+        }
+      } else {
+        terminal.print("The corpse appears to have nothing of value.", 'examine-result');
+      }
+    };
   }
 
   showHelp() {
