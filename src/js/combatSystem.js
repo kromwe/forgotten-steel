@@ -723,12 +723,18 @@ export class CombatSystem {
       }
     }
     
-    // Create corpse that remains in the location
-    this.createCorpse();
-    
-    // Handle post-combat events
+    // Handle post-combat events first to check for special conditions
+    let preventCorpse = false;
     if (this.currentEnemy.onDefeat) {
-      this.currentEnemy.onDefeat(this.gameState, this.terminal, this.storyEngine);
+      const result = this.currentEnemy.onDefeat(this.gameState, this.terminal, this.storyEngine);
+      if (result && result.preventCorpse) {
+        preventCorpse = true;
+      }
+    }
+    
+    // Create corpse that remains in the location (unless prevented)
+    if (!preventCorpse) {
+      this.createCorpse();
     }
     
     // End combat
