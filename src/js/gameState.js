@@ -38,9 +38,6 @@ export class GameState {
       foundTower: false,
       triggerWolfDeathStory: false
     };
-    
-    // Story trigger flags
-    this.triggerWolfDeathStory = false;
   }
   
   newGame(playerName) {
