@@ -713,13 +713,47 @@ export class StoryEngine {
   }
   
   gameOverReturnToTitle() {
-    // Disable terminal input
-    this.terminal.setEnabled(false);
+    this.terminal.print("\nPress Enter to return to title screen...", 'game-over-message');
     
-    // Show game over screen
-    const gameOverScreen = document.getElementById('game-over-screen');
-    if (gameOverScreen) {
-      gameOverScreen.style.display = 'flex';
+    // Set up special Enter key handler for returning to title
+    this.setupGameOverHandler();
+  }
+  
+  setupGameOverHandler() {
+    // Disable normal terminal processing
+    this.terminal.disable();
+    
+    // Create a special keydown handler for Enter key
+    const gameOverHandler = (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        // Remove this handler
+        document.removeEventListener('keydown', gameOverHandler);
+        
+        // Return to title screen
+        this.returnToTitleScreen();
+      }
+    };
+    
+    // Add the handler to the document
+    document.addEventListener('keydown', gameOverHandler);
+  }
+  
+  returnToTitleScreen() {
+    // Re-enable terminal
+    this.terminal.enable();
+    
+    // Clear terminal
+    this.terminal.clear();
+    
+    // Show title screen
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.classList.remove('active'));
+    
+    const titleScreen = document.getElementById('title-screen');
+    if (titleScreen) {
+      titleScreen.classList.add('active');
     }
   }
 
