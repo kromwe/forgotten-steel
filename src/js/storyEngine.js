@@ -631,17 +631,23 @@ export class StoryEngine {
             if (npc.loot && npc.loot.length > 0) {
               this.terminal.print(`You search the ${npc.name} and find:`, 'action-result');
               
+              // Add loot items to the current location so they can be taken individually
+              if (!location.items) {
+                location.items = [];
+              }
+              
               for (const lootItem of npc.loot) {
                 const item = this.items[lootItem.id];
                 if (item) {
-                  // Add to inventory
-                  this.gameState.addToInventory({
-                    id: lootItem.id,
-                    ...item
-                  });
+                  // Add item to location items if not already there
+                  if (!location.items.includes(lootItem.id)) {
+                    location.items.push(lootItem.id);
+                  }
                   this.terminal.print(`- ${item.name}`, 'item-found');
                 }
               }
+              
+              this.terminal.print(`You can 'take' or 'get' each item individually.`, 'action-hint');
             } else {
               this.terminal.print(`You search the ${npc.name} but find nothing of value.`, 'action-result');
             }

@@ -79,15 +79,11 @@ export const gameData = {
         east: {
           locationId: "forest_path_west",
           condition: (gameState) => {
-            // Check if the twisted wolf is still alive and present
-            const location = gameState.storyEngine?.locations?.village_outskirts;
-            if (location && location.npcs && location.npcs.includes('small_creature')) {
-              const wolf = gameState.storyEngine?.npcs?.small_creature;
-              if (wolf && wolf.health > 0 && !wolf.hidden) {
-                // Trigger wolf death story
-                gameState.triggerWolfDeathStory = true;
-                return false;
-              }
+            // Check if the children have been saved - if not, player cannot leave
+            if (!gameState.getFlag('savedChildren')) {
+              // Trigger wolf death story
+              gameState.triggerWolfDeathStory = true;
+              return false;
             }
             return true;
           },
@@ -96,15 +92,11 @@ export const gameData = {
         west: {
           locationId: "village_entrance",
           condition: (gameState) => {
-            // Check if the twisted wolf is still alive and present
-            const location = gameState.storyEngine?.locations?.village_outskirts;
-            if (location && location.npcs && location.npcs.includes('small_creature')) {
-              const wolf = gameState.storyEngine?.npcs?.small_creature;
-              if (wolf && wolf.health > 0 && !wolf.hidden) {
-                // Trigger wolf death story
-                gameState.triggerWolfDeathStory = true;
-                return false;
-              }
+            // Check if the children have been saved - if not, player cannot leave
+            if (!gameState.getFlag('savedChildren')) {
+              // Trigger wolf death story
+              gameState.triggerWolfDeathStory = true;
+              return false;
             }
             return true;
           },
