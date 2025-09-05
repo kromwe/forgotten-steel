@@ -82,7 +82,7 @@ export const gameData = {
             // Check if the children have been saved - if not, player cannot leave
             if (!gameState.getFlag('savedChildren')) {
               // Trigger wolf death story
-              gameState.triggerWolfDeathStory = true;
+              gameState.setFlag('triggerWolfDeathStory', true);
               return false;
             }
             return true;
@@ -95,7 +95,7 @@ export const gameData = {
             // Check if the children have been saved - if not, player cannot leave
             if (!gameState.getFlag('savedChildren')) {
               // Trigger wolf death story
-              gameState.triggerWolfDeathStory = true;
+              gameState.setFlag('triggerWolfDeathStory', true);
               return false;
             }
             return true;

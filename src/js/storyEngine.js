@@ -257,7 +257,7 @@ export class StoryEngine {
     if (typeof exit === 'object' && exit.condition) {
       if (!exit.condition(this.gameState)) {
         // Check if wolf death story should be triggered
-        if (this.gameState.triggerWolfDeathStory) {
+        if (this.gameState.getFlag('triggerWolfDeathStory')) {
           this.triggerWolfDeathStory();
           return;
         }
@@ -674,7 +674,7 @@ export class StoryEngine {
   
   triggerWolfDeathStory() {
     // Clear the trigger flag
-    this.gameState.triggerWolfDeathStory = false;
+    this.gameState.setFlag('triggerWolfDeathStory', false);
     
     // Display the dramatic death story
     this.terminal.print("\n", 'story-text');

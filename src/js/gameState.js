@@ -35,7 +35,8 @@ export class GameState {
       rememberedKnight: false,
       rememberedWizard: false,
       rememberedQueen: false,
-      foundTower: false
+      foundTower: false,
+      triggerWolfDeathStory: false
     };
     
     // Story trigger flags
@@ -90,11 +91,12 @@ export class GameState {
       rememberedKnight: false,
       rememberedWizard: false,
       rememberedQueen: false,
-      foundTower: false
+      foundTower: false,
+      triggerWolfDeathStory: false
     };
     
     // Always reset story trigger flags when loading
-    this.triggerWolfDeathStory = false;
+    this.flags.triggerWolfDeathStory = false;
     
     return true;
   }
