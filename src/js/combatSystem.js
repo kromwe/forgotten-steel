@@ -21,10 +21,10 @@ export class CombatSystem {
     this.displayWeaponStatus();
     
     // Display enemy stats
-    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, "enemy-stats");
+    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, "combat-health");
     
     // Display player stats
-    this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, "player-stats");
+    this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, "combat-health");
     
     // Display available combat actions
     this.showCombatActions();
@@ -371,12 +371,30 @@ export class CombatSystem {
     // Apply damage to enemy
     this.currentEnemy.health -= damage;
     
-    // Display attack message
+    // Display descriptive attack message
+    const attackDescriptions = {
+      weapon: [
+        `You swing your ${this.gameState.equippedWeapon.name} at ${this.currentEnemy.name}`,
+        `You strike ${this.currentEnemy.name} with your ${this.gameState.equippedWeapon.name}`,
+        `You slash at ${this.currentEnemy.name} with your ${this.gameState.equippedWeapon.name}`,
+        `You thrust your ${this.gameState.equippedWeapon.name} toward ${this.currentEnemy.name}`
+      ],
+      bareHands: [
+        `You punch ${this.currentEnemy.name} with your fist`,
+        `You strike ${this.currentEnemy.name} with your bare hands`,
+        `You throw a punch at ${this.currentEnemy.name}`,
+        `You lash out at ${this.currentEnemy.name} with your fists`
+      ]
+    };
+    
+    let attackDesc;
     if (this.gameState.equippedWeapon) {
-      this.terminal.print(`You attack ${this.currentEnemy.name} with your ${this.gameState.equippedWeapon.name}, dealing ${damage} damage!`, 'player-attack');
+      attackDesc = attackDescriptions.weapon[Math.floor(Math.random() * attackDescriptions.weapon.length)];
     } else {
-      this.terminal.print(`You attack ${this.currentEnemy.name} with your bare hands, dealing ${damage} damage!`, 'player-attack');
+      attackDesc = attackDescriptions.bareHands[Math.floor(Math.random() * attackDescriptions.bareHands.length)];
     }
+    
+    this.terminal.print(`${attackDesc}, dealing ${damage} damage!`, 'combat-damage');
     
     // Check if enemy is defeated
     if (this.currentEnemy.health <= 0) {
@@ -386,7 +404,7 @@ export class CombatSystem {
     
     // Switch to enemy turn
     this.playerTurn = false;
-    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, 'enemy-stats');
+    this.terminal.print(`${this.currentEnemy.name}'s Health: ${this.currentEnemy.health}/${this.currentEnemy.maxHealth}`, 'combat-health');
     
     // Enemy attacks after a short delay
     setTimeout(() => this.enemyTurn(), 1500);
@@ -518,9 +536,18 @@ export class CombatSystem {
     // Apply damage to player
     this.gameState.takeDamage(damage);
     
-    // Display attack message
-    this.terminal.print(`${this.currentEnemy.name} attacks you, dealing ${damage} damage!`, 'enemy-attack');
-    this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, 'player-stats');
+    // Display descriptive enemy attack message
+    const enemyAttackDescriptions = [
+      `${this.currentEnemy.name} lunges at you`,
+      `${this.currentEnemy.name} strikes you with its claws`,
+      `${this.currentEnemy.name} bites you viciously`,
+      `${this.currentEnemy.name} slashes at you`,
+      `${this.currentEnemy.name} attacks you ferociously`
+    ];
+    
+    const attackDesc = enemyAttackDescriptions[Math.floor(Math.random() * enemyAttackDescriptions.length)];
+    this.terminal.print(`${attackDesc}, dealing ${damage} damage!`, 'combat-damage');
+    this.terminal.print(`Your Health: ${this.gameState.playerHealth}/${this.gameState.playerMaxHealth}`, 'combat-health');
     
     // Check if player is defeated
     if (this.gameState.playerHealth <= 0) {
@@ -670,24 +697,22 @@ export class CombatSystem {
   }
   
   setupGameOverHandler() {
-    // Disable normal terminal processing
-    this.terminal.disable();
+    // Clear existing command handlers but keep terminal enabled for mobile keyboard
+    this.terminal.commandHandlers = {};
     
-    // Create a special keydown handler for Enter key
-    const gameOverHandler = (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        
-        // Remove this handler
-        document.removeEventListener('keydown', gameOverHandler);
-        
-        // Return to title screen
-        this.returnToTitleScreen();
-      }
-    };
+    // Set up special command handler for Enter key that works on mobile
+    this.terminal.registerCommand('^$', () => {
+      // Handle empty input (Enter key press)
+      this.returnToTitleScreen();
+    });
     
-    // Add the handler to the document
-    document.addEventListener('keydown', gameOverHandler);
+    // Also handle any input as return to title for convenience
+    this.terminal.registerCommand('.*', () => {
+      this.returnToTitleScreen();
+    });
+    
+    // Keep input focused for mobile keyboard
+    this.terminal.inputElement.focus();
   }
   
   returnToTitleScreen() {

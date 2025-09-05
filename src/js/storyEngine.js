@@ -255,7 +255,7 @@ export class StoryEngine {
     
     // Handle conditional exits
     if (typeof exit === 'object' && exit.condition) {
-      if (!exit.condition(this.gameState)) {
+      if (!exit.condition(this.gameState, this)) {
         // Check if wolf death story should be triggered
         if (this.gameState.getFlag('triggerWolfDeathStory')) {
           this.triggerWolfDeathStory();
@@ -723,24 +723,22 @@ export class StoryEngine {
   }
   
   setupGameOverHandler() {
-    // Disable normal terminal processing
-    this.terminal.disable();
+    // Clear existing command handlers but keep terminal enabled for mobile keyboard
+    this.terminal.commandHandlers = {};
     
-    // Create a special keydown handler for Enter key
-    const gameOverHandler = (event) => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        
-        // Remove this handler
-        document.removeEventListener('keydown', gameOverHandler);
-        
-        // Return to title screen
-        this.returnToTitleScreen();
-      }
-    };
+    // Set up special command handler for Enter key that works on mobile
+    this.terminal.registerCommand('^$', () => {
+      // Handle empty input (Enter key press)
+      this.returnToTitleScreen();
+    });
     
-    // Add the handler to the document
-    document.addEventListener('keydown', gameOverHandler);
+    // Also handle any input as return to title for convenience
+    this.terminal.registerCommand('.*', () => {
+      this.returnToTitleScreen();
+    });
+    
+    // Keep input focused for mobile keyboard
+    this.terminal.inputElement.focus();
   }
   
   returnToTitleScreen() {

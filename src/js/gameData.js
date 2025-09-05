@@ -78,11 +78,14 @@ export const gameData = {
       exits: {
         east: {
           locationId: "forest_path_west",
-          condition: (gameState) => {
+          condition: (gameState, storyEngine) => {
             // Check if the children have been saved - if not, player cannot leave
             if (!gameState.getFlag('savedChildren')) {
-              // Trigger wolf death story
-              gameState.setFlag('triggerWolfDeathStory', true);
+              // Only trigger wolf death story if the wolf is still alive
+              const location = storyEngine.locations['village_outskirts'];
+              if (location && location.npcs && location.npcs.includes('small_creature')) {
+                gameState.setFlag('triggerWolfDeathStory', true);
+              }
               return false;
             }
             return true;
@@ -91,11 +94,14 @@ export const gameData = {
         },
         west: {
           locationId: "village_entrance",
-          condition: (gameState) => {
+          condition: (gameState, storyEngine) => {
             // Check if the children have been saved - if not, player cannot leave
             if (!gameState.getFlag('savedChildren')) {
-              // Trigger wolf death story
-              gameState.setFlag('triggerWolfDeathStory', true);
+              // Only trigger wolf death story if the wolf is still alive
+              const location = storyEngine.locations['village_outskirts'];
+              if (location && location.npcs && location.npcs.includes('small_creature')) {
+                gameState.setFlag('triggerWolfDeathStory', true);
+              }
               return false;
             }
             return true;

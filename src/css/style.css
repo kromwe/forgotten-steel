@@ -333,6 +333,33 @@ input[type="text"]:focus {
   font-style: italic;
 }
 
+/* Combat Text Styling */
+.combat-damage {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.combat-health {
+  color: #ffdd44;
+  font-weight: bold;
+}
+
+.player-attack {
+  color: #ff6666;
+}
+
+.enemy-attack {
+  color: #ff4444;
+}
+
+.player-stats {
+  color: #ffdd44;
+}
+
+.enemy-stats {
+  color: #ffaa44;
+}
+
 /* Mobile-Friendly Styles */
 @media screen and (max-width: 768px) {
   /* Larger touch-friendly buttons */
