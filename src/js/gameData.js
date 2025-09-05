@@ -89,11 +89,6 @@ export const gameData = {
             if (!gameState.getFlag('savedChildren') && hasWolf) {
               console.log('East exit condition - Setting triggerWolfDeathStory to true');
               gameState.setFlag('triggerWolfDeathStory', true);
-              console.log('East exit condition - Flag set, triggering story immediately');
-              // Trigger the wolf death story immediately
-              setTimeout(() => {
-                storyEngine.triggerWolfDeathStory();
-              }, 100);
               return false;
             }
             console.log('East exit condition - Allowing movement');
@@ -114,11 +109,6 @@ export const gameData = {
             if (!gameState.getFlag('savedChildren') && hasWolf) {
               console.log('West exit condition - Setting triggerWolfDeathStory to true');
               gameState.setFlag('triggerWolfDeathStory', true);
-              console.log('West exit condition - Flag set, triggering story immediately');
-              // Trigger the wolf death story immediately
-              setTimeout(() => {
-                storyEngine.triggerWolfDeathStory();
-              }, 100);
               return false;
             }
             console.log('West exit condition - Allowing movement');
@@ -822,9 +812,6 @@ export const gameData = {
         
         terminal.print("'Thank you!' the boy cries, helping the girl to her feet. 'We need to get back to the village. You should come too—our elder will want to thank you.'", 'npc-dialog');
         terminal.print("The children run toward the village to the west.", 'story-event');
-        
-        // Prevent corpse creation for this special story encounter
-        return { preventCorpse: true };
       }
     },
     

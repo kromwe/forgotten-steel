@@ -308,11 +308,31 @@ class Game {
     // Store the character name for use in the game
     this.playerName = characterName;
     
+    // Clean up existing game systems before starting new game
+    this.cleanupGameSystems();
+    
+    // Reset game state
+    this.gameState.reset();
+    this.gameState.playerName = characterName;
+    
     // Transition to the game screen
     this.showScreen('game-screen');
     
     // Initialize the game world
     this.initializeGame();
+  }
+  
+  cleanupGameSystems() {
+    // Clean up existing terminal if it exists
+    if (this.terminal) {
+      this.terminal.cleanup();
+      this.terminal = null;
+    }
+    
+    // Clean up other systems
+    this.storyEngine = null;
+    this.combatSystem = null;
+    this.memorySystem = null;
   }
   
   initializeGame() {

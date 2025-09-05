@@ -17,8 +17,8 @@ export class Terminal {
   }
   
   init() {
-    // Set up input event listener
-    this.inputElement.addEventListener('keydown', (event) => {
+    // Store event handler references for cleanup
+    this.keydownHandler = (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
         this.processInput();
@@ -29,32 +29,41 @@ export class Terminal {
         event.preventDefault();
         this.navigateHistory(1);
       }
-    });
+    };
+    
+    this.clickHandler = () => {
+      this.inputElement.focus();
+    };
+    
+    // Set up input event listener
+    this.inputElement.addEventListener('keydown', this.keydownHandler);
     
     // Focus the input element
     this.inputElement.focus();
     
     // Add event listener to refocus input when clicking anywhere in the terminal
-    document.getElementById('terminal-container').addEventListener('click', () => {
-      this.inputElement.focus();
-    });
+    const terminalContainer = document.getElementById('terminal-container');
+    if (terminalContainer) {
+      terminalContainer.addEventListener('click', this.clickHandler);
+    }
   }
   
   processInput() {
     const input = this.inputElement.value.trim();
-    if (input === '') return;
     
-    // Add to command history
-    this.commandHistory.push(input);
-    this.historyIndex = this.commandHistory.length;
-    
-    // Display the input
-    this.print(input, 'player-input');
+    // Add to command history (only if not empty)
+    if (input !== '') {
+      this.commandHistory.push(input);
+      this.historyIndex = this.commandHistory.length;
+      
+      // Display the input
+      this.print(input, 'player-input');
+    }
     
     // Clear the input field
     this.inputElement.value = '';
     
-    // Process the command
+    // Process the command (allow empty input for special handlers like game over)
     this.parseCommand(input);
   }
   
@@ -165,5 +174,24 @@ export class Terminal {
   enable() {
     this.inputElement.disabled = false;
     this.inputElement.focus();
+  }
+  
+  cleanup() {
+    // Remove event listeners
+    if (this.inputElement) {
+      this.inputElement.removeEventListener('keydown', this.keydownHandler);
+    }
+    
+    const terminalContainer = document.getElementById('terminal-container');
+    if (terminalContainer && this.clickHandler) {
+      terminalContainer.removeEventListener('click', this.clickHandler);
+    }
+    
+    // Clear command handlers
+    this.commandHandlers = {};
+    
+    // Clear command history
+    this.commandHistory = [];
+    this.historyIndex = -1;
   }
 }

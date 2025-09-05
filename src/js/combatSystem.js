@@ -372,26 +372,23 @@ export class CombatSystem {
     this.currentEnemy.health -= damage;
     
     // Display descriptive attack message
-    const attackDescriptions = {
-      weapon: [
+    let attackDesc;
+    if (this.gameState.equippedWeapon) {
+      const weaponAttacks = [
         `You swing your ${this.gameState.equippedWeapon.name} at ${this.currentEnemy.name}`,
         `You strike ${this.currentEnemy.name} with your ${this.gameState.equippedWeapon.name}`,
         `You slash at ${this.currentEnemy.name} with your ${this.gameState.equippedWeapon.name}`,
         `You thrust your ${this.gameState.equippedWeapon.name} toward ${this.currentEnemy.name}`
-      ],
-      bareHands: [
+      ];
+      attackDesc = weaponAttacks[Math.floor(Math.random() * weaponAttacks.length)];
+    } else {
+      const bareHandAttacks = [
         `You punch ${this.currentEnemy.name} with your fist`,
         `You strike ${this.currentEnemy.name} with your bare hands`,
         `You throw a punch at ${this.currentEnemy.name}`,
         `You lash out at ${this.currentEnemy.name} with your fists`
-      ]
-    };
-    
-    let attackDesc;
-    if (this.gameState.equippedWeapon) {
-      attackDesc = attackDescriptions.weapon[Math.floor(Math.random() * attackDescriptions.weapon.length)];
-    } else {
-      attackDesc = attackDescriptions.bareHands[Math.floor(Math.random() * attackDescriptions.bareHands.length)];
+      ];
+      attackDesc = bareHandAttacks[Math.floor(Math.random() * bareHandAttacks.length)];
     }
     
     this.terminal.print(`${attackDesc}, dealing ${damage} damage!`, 'combat-damage');

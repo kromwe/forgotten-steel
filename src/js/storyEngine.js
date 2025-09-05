@@ -759,6 +759,9 @@ export class StoryEngine {
     // Clear terminal
     this.terminal.clear();
     
+    // Clear all command handlers to ensure clean state for new game
+    this.terminal.commandHandlers = {};
+    
     // Reset the game state to ensure clean restart
     if (this.gameState) {
       this.gameState.reset();
