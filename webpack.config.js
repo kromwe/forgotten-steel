@@ -11,7 +11,7 @@ module.exports = (env, argv) => {
   output: {
     filename: isProduction ? '[name].[contenthash].js' : 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '/',
+    publicPath: isProduction ? '/forgotten-steel/' : '/',
     clean: true
   },
   devtool: isProduction ? false : 'eval-source-map',
