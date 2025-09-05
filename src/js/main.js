@@ -138,18 +138,22 @@ class Game {
       alert('Save/Load functionality is not available in this browser or is disabled.');
       return;
     }
-    
+
     const savedGame = localStorage.getItem('forgottenSteel_saveGame');
-    
+
     if (!savedGame) {
       alert('No saved game found! Start a new game to begin your adventure.');
       return;
     }
-    
+
     try {
       const saveData = JSON.parse(savedGame);
       
-      // Restore comprehensive game state
+      // Initialize GameState and load from save data using proper method
+      this.gameState = new GameState();
+      this.gameState.loadFromSave(saveData);
+      
+      // Restore main game properties
       this.playerName = saveData.playerName || '';
       this.currentLocation = saveData.currentLocation || 'crossroads';
       this.inventory = saveData.inventory || [];
@@ -161,20 +165,6 @@ class Game {
         discoveredItems: []
       };
       this.terminalHistory = saveData.terminalHistory || [];
-      
-      // Update gameState object with loaded data
-      this.gameState.playerName = saveData.playerName || '';
-      this.gameState.currentLocation = saveData.currentLocation || 'crossroads';
-      this.gameState.inventory = saveData.inventory || [];
-      this.gameState.health = saveData.health || 100;
-      this.gameState.maxHealth = saveData.maxHealth || 100;
-      this.gameState.experience = saveData.experience || 0;
-      this.gameState.level = saveData.level || 1;
-      this.gameState.equipment = saveData.equipment || { weapon: null, armor: null };
-      this.gameState.flags = saveData.flags || {};
-      this.gameState.memoryFragments = saveData.memoryFragments || [];
-      this.gameState.memoryRecovered = saveData.memoryRecovered || 0;
-      this.gameState.knownInformation = saveData.knownInformation || [];
       
       // Transition to game screen
       this.showScreen('game-screen');
@@ -213,27 +203,22 @@ class Game {
       }
       return false;
     }
-    
+
     try {
-      const saveData = {
-        playerName: this.gameState.playerName,
-        currentLocation: this.gameState.currentLocation,
-        inventory: this.gameState.inventory,
-        health: this.gameState.health,
-        maxHealth: this.gameState.maxHealth,
-        experience: this.gameState.experience,
-        level: this.gameState.level,
-        equipment: this.gameState.equipment,
-        flags: this.gameState.flags,
-        memoryFragments: this.gameState.memoryFragments,
-        memoryRecovered: this.gameState.memoryRecovered,
-        knownInformation: this.gameState.knownInformation,
-        gameProgress: this.gameProgress,
-        terminalHistory: this.terminal ? this.terminal.getHistory() : this.terminalHistory,
-        saveDate: new Date().toISOString()
-      };
+      // Use GameState's proper save method
+      const success = this.gameState.saveGame();
       
-      localStorage.setItem('forgottenSteel_saveGame', JSON.stringify(saveData));
+      if (success) {
+        // Also save additional main game data
+        const savedGame = localStorage.getItem('forgottenSteel_saveGame');
+        if (savedGame) {
+          const saveData = JSON.parse(savedGame);
+          saveData.gameProgress = this.gameProgress;
+          saveData.terminalHistory = this.terminal ? this.terminal.getHistory() : this.terminalHistory;
+          saveData.saveDate = new Date().toISOString();
+          localStorage.setItem('forgottenSteel_saveGame', JSON.stringify(saveData));
+        }
+      }
       
       const saveMsg = `Game saved successfully! (${new Date().toLocaleString()})`;
       if (this.terminal) {
@@ -286,7 +271,7 @@ class Game {
     this.storyEngine = new StoryEngine(this.gameState, this.terminal, this.webglRenderer);
     
     // Initialize Combat System with story engine reference
-        this.combatSystem = new CombatSystem(this.gameState, this.terminal, this.storyEngine);
+    this.combatSystem = new CombatSystem(this.gameState, this.terminal, this.storyEngine);
     this.combatSystem.storyEngine = this.storyEngine;
     this.storyEngine.setCombatSystem(this.combatSystem);
     this.storyEngine.setMemorySystem(this.memorySystem);
@@ -332,33 +317,6 @@ class Game {
   }
   
   initializeGame() {
-    // Reset game state for new game
-    this.currentLocation = 'crossroads';
-    this.inventory = [];
-    this.gameProgress = {
-      memoryFragments: [],
-      questFlags: {},
-      visitedLocations: [],
-      defeatedEnemies: [],
-      discoveredItems: []
-    };
-    this.terminalHistory = [];
-
-    // Create new GameState instance
-    this.gameState = new GameState();
-    this.gameState.playerName = this.playerName;
-    this.gameState.currentLocation = 'crossroads';
-    this.gameState.inventory = [];
-    this.gameState.health = 100;
-    this.gameState.maxHealth = 100;
-    this.gameState.experience = 0;
-    this.gameState.level = 1;
-    this.gameState.equipment = { weapon: null, armor: null };
-    this.gameState.flags = {};
-    this.gameState.memoryFragments = [];
-    this.gameState.memoryRecovered = 0;
-    this.gameState.knownInformation = [];
-
     // Initialize WebGL renderer
     const canvas = document.getElementById('webgl-canvas');
     if (canvas) {
@@ -369,11 +327,15 @@ class Game {
     // Initialize Terminal
     this.terminal = new Terminal('terminal-output', 'terminal-input');
     
+    // Initialize Memory System
+    this.memorySystem = new MemorySystem(this.gameState, this.terminal, this.webglRenderer, null);
+    initializeMemorySystem(this.memorySystem);
+    
     // Initialize Story Engine
     this.storyEngine = new StoryEngine(this.gameState, this.terminal, this.webglRenderer);
     
     // Initialize Combat System with story engine reference
-        this.combatSystem = new CombatSystem(this.gameState, this.terminal, this.storyEngine);
+    this.combatSystem = new CombatSystem(this.gameState, this.terminal, this.storyEngine);
     this.combatSystem.storyEngine = this.storyEngine;
     this.storyEngine.setCombatSystem(this.combatSystem);
     this.storyEngine.setMemorySystem(this.memorySystem);
