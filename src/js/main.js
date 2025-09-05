@@ -136,6 +136,8 @@ class Game {
     if (screenId === 'title-screen') {
       // Don't auto-start music - wait for user interaction
       // this.startTitleMusic();
+    } else if (screenId === 'character-creation-screen') {
+      // Keep music playing during character creation
     } else {
       this.stopTitleMusic();
     }
