@@ -79,15 +79,20 @@ export const gameData = {
         east: {
           locationId: "forest_path_west",
           condition: (gameState, storyEngine) => {
-            // Check if the children have been saved - if not, player cannot leave
-            if (!gameState.getFlag('savedChildren')) {
-              // Only trigger wolf death story if the wolf is still alive
-              const location = storyEngine.locations['village_outskirts'];
-              if (location && location.npcs && location.npcs.includes('small_creature')) {
-                gameState.setFlag('triggerWolfDeathStory', true);
-              }
+            // If children have been saved, player can always leave
+            if (gameState.getFlag('savedChildren')) {
+              return true;
+            }
+            
+            // If children haven't been saved, check if wolf is still alive
+            const location = storyEngine.locations['village_outskirts'];
+            if (location && location.npcs && location.npcs.includes('small_creature')) {
+              // Wolf is alive, trigger story and block movement
+              gameState.setFlag('triggerWolfDeathStory', true);
               return false;
             }
+            
+            // Wolf is dead but children flag not set - this shouldn't happen, but allow movement
             return true;
           },
           blockedMessage: ""
@@ -95,15 +100,20 @@ export const gameData = {
         west: {
           locationId: "village_entrance",
           condition: (gameState, storyEngine) => {
-            // Check if the children have been saved - if not, player cannot leave
-            if (!gameState.getFlag('savedChildren')) {
-              // Only trigger wolf death story if the wolf is still alive
-              const location = storyEngine.locations['village_outskirts'];
-              if (location && location.npcs && location.npcs.includes('small_creature')) {
-                gameState.setFlag('triggerWolfDeathStory', true);
-              }
+            // If children have been saved, player can always leave
+            if (gameState.getFlag('savedChildren')) {
+              return true;
+            }
+            
+            // If children haven't been saved, check if wolf is still alive
+            const location = storyEngine.locations['village_outskirts'];
+            if (location && location.npcs && location.npcs.includes('small_creature')) {
+              // Wolf is alive, trigger story and block movement
+              gameState.setFlag('triggerWolfDeathStory', true);
               return false;
             }
+            
+            // Wolf is dead but children flag not set - this shouldn't happen, but allow movement
             return true;
           },
           blockedMessage: ""
